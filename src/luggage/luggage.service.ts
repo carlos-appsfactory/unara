@@ -4,6 +4,7 @@ import { UpdateLuggageDto } from './dto/update-luggage.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Luggage } from './entities/luggage.entity';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class LuggageService {
@@ -26,8 +27,13 @@ export class LuggageService {
     }
   }
 
-  async findAll() {
-    return this.luggageRepository.find({})
+  async findAll(paginationDto: PaginationDto) {
+    const { limit = 10, offset = 0} = paginationDto
+
+    return this.luggageRepository.find({
+      take: limit,
+      skip: offset
+    })
   }
 
   async findOne(id: string) {

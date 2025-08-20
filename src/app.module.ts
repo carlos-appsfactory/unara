@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LuggageModule } from './luggage/luggage.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -18,7 +19,9 @@ import { LuggageModule } from './luggage/luggage.module';
       synchronize: true, // TODO: Esto se tiene que quitar en producción
     }),
 
-    LuggageModule
+    LuggageModule,
+
+    CommonModule
   ],
 })
 export class AppModule {}
