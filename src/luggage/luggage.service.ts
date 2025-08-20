@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Luggage } from './entities/luggage.entity';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { FilterLuggageDto } from './dto/filter-luggage.dto';
 
 @Injectable()
 export class LuggageService {
@@ -27,13 +28,23 @@ export class LuggageService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0} = paginationDto
+  async findAll(filterLuggageDto: FilterLuggageDto) {
+    const { 
+      limit = 10, 
+      offset = 0,
+      name,
+      type,
+    } = filterLuggageDto
 
-    return this.luggageRepository.find({
-      take: limit,
-      skip: offset
-    })
+    const query = this.luggageRepository.createQueryBuilder('luggage')
+
+    if (name) query.andWhere('luggage.name ILIKE :name', { name: `%${name}%`})
+    
+    if (type) query.andWhere('luggage.type = :type', { type: type})
+
+    query.skip(offset).take(limit)
+
+    return query.getMany()
   }
 
   async findOne(id: string) {
