@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateLuggageDto } from './dto/create-luggage.dto';
 import { UpdateLuggageDto } from './dto/update-luggage.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,20 +26,32 @@ export class LuggageService {
     }
   }
 
-  findAll() {
-    return `This action returns all luggage`;
+  async findAll() {
+    return this.luggageRepository.find({})
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} luggage`;
+  async findOne(id: string) {
+    const luggage = await this.luggageRepository.findOneBy({ id: id })
+
+    if (!luggage){
+      throw new NotFoundException(`Luggage with id ${id} not found`)
+    }
+
+    return luggage
   }
 
   update(id: number, updateLuggageDto: UpdateLuggageDto) {
     return `This action updates a #${id} luggage`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} luggage`;
+  async remove(id: string) {
+    const luggage = await this.luggageRepository.findOneBy({ id: id })
+
+    if (!luggage){
+      throw new NotFoundException(`Luggage with id ${id} not found`)
+    }
+
+    this.luggageRepository.remove(luggage)
   }
 
   private handleExceptions(error: any){
