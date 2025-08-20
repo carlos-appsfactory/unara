@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
 import { LuggageService } from './luggage.service';
 import { CreateLuggageDto } from './dto/create-luggage.dto';
 import { UpdateLuggageDto } from './dto/update-luggage.dto';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Controller('luggage')
 export class LuggageController {
@@ -13,8 +14,8 @@ export class LuggageController {
   }
 
   @Get()
-  findAll() {
-    return this.luggageService.findAll();
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.luggageService.findAll(paginationDto);
   }
 
   @Get(':id')
