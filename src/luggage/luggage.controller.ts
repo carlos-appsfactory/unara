@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
 import { LuggageService } from './luggage.service';
 import { CreateLuggageDto } from './dto/create-luggage.dto';
 import { UpdateLuggageDto } from './dto/update-luggage.dto';
@@ -18,8 +18,8 @@ export class LuggageController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.luggageService.findOne(+id);
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.luggageService.findOne(id);
   }
 
   @Patch(':id')
@@ -29,6 +29,6 @@ export class LuggageController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.luggageService.remove(+id);
+    return this.luggageService.remove(id);
   }
 }
