@@ -1,10 +1,10 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 export enum LuggageType {
-  SMALL_BACKPACK = "mochila pequeña",
-  LARGE_BACKPACK = "mochila grande",
-  SMALL_SUITCASE = "maleta pequeña",
-  LARGE_SUITCASE = "maleta grande",
+  SMALL_BACKPACK = "small_backpack",
+  LARGE_BACKPACK = "large_backpack",
+  SMALL_SUITCASE = "small_suitcase",
+  LARGE_SUITCASE = "large_suitcase",
 }
 
 @Entity()
