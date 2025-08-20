@@ -3,6 +3,7 @@ import { LuggageService } from './luggage.service';
 import { CreateLuggageDto } from './dto/create-luggage.dto';
 import { UpdateLuggageDto } from './dto/update-luggage.dto';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { FilterLuggageDto } from './dto/filter-luggage.dto';
 
 @Controller('luggage')
 export class LuggageController {
@@ -14,8 +15,8 @@ export class LuggageController {
   }
 
   @Get()
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.luggageService.findAll(paginationDto);
+  findAll(@Query() filterLuggageDto: FilterLuggageDto) {
+    return this.luggageService.findAll(filterLuggageDto);
   }
 
   @Get(':id')
