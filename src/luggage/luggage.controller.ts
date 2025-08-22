@@ -2,7 +2,6 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query
 import { LuggageService } from './luggage.service';
 import { CreateLuggageDto } from './dto/create-luggage.dto';
 import { UpdateLuggageDto } from './dto/update-luggage.dto';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { FilterLuggageDto } from './dto/filter-luggage.dto';
 
 @Controller('luggage')
