@@ -56,8 +56,23 @@ export class UsersService {
     return user
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.userRepository.preload({
+      id,
+      ...updateUserDto
+    })
+
+    if (!user){
+      throw new NotFoundException(`User with id ${id} not found`)
+    }
+
+    try {
+      await this.userRepository.save(user)
+      return user
+    
+    } catch (error) {
+      this.handleExceptions(error)
+    }
   }
 
   remove(id: string) {
