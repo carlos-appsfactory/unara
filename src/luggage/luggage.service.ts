@@ -4,7 +4,6 @@ import { UpdateLuggageDto } from './dto/update-luggage.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Luggage } from './entities/luggage.entity';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { FilterLuggageDto } from './dto/filter-luggage.dto';
 
 @Injectable()
