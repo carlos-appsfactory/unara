@@ -25,8 +25,10 @@ export class LuggageController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateLuggageDto: UpdateLuggageDto) {
-    return this.luggageService.update(+id, updateLuggageDto);
+  update(
+    @Param('id', ParseUUIDPipe) id: string, 
+    @Body() updateLuggageDto: UpdateLuggageDto) {
+    return this.luggageService.update(id, updateLuggageDto);
   }
 
   @Delete(':id')

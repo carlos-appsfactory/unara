@@ -57,8 +57,24 @@ export class LuggageService {
     return luggage
   }
 
-  update(id: number, updateLuggageDto: UpdateLuggageDto) {
-    return `This action updates a #${id} luggage`;
+  async update(id: string, updateLuggageDto: UpdateLuggageDto) {
+    const luggage = await this.luggageRepository.preload({
+      id,
+      ...updateLuggageDto
+    })
+
+    if (!luggage){
+      throw new NotFoundException(`Luggage with id ${id} not found`)
+    }
+
+    try {
+      await this.luggageRepository.save(luggage)
+      return luggage
+    
+    } catch (error) {
+      this.handleExceptions(error)
+    }
+    return 
   }
 
   async remove(id: string) {
