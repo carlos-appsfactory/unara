@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -33,5 +33,14 @@ export class UsersService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  private handleExceptions(error: any){
+    // TODO: Añadir los códigos de error que veamos que se van dando
+    // if (error.code === 0) throw new BadRequestException(error.detail)
+
+    this.logger.error(error)
+
+    throw new InternalServerErrorException('Unexpected error, check server logs')
   }
 }
