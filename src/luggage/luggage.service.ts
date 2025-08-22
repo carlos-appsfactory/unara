@@ -73,7 +73,6 @@ export class LuggageService {
     } catch (error) {
       this.handleExceptions(error)
     }
-    return 
   }
 
   async remove(id: string) {
