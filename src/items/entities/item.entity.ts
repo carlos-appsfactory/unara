@@ -8,8 +8,8 @@ export class Item {
     @Column({ type: 'varchar', length: 255 })
     name: string
 
-    @Column('text')
-    description: string
+    @Column({ type: 'text', nullable: true })
+    description?: string
 
     // TODO: Relacionarlo usuarios
     // TODO: Relacionarlo con maletas
