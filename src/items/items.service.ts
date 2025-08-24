@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -32,5 +32,14 @@ export class ItemsService {
 
   remove(id: number) {
     return `This action removes a #${id} item`;
+  }
+
+  private handleExceptions(error: any){
+    // TODO: Añadir los códigos de error que veamos que se van dando
+    // if (error.code === 0) throw new BadRequestException(error.detail)
+
+    this.logger.error(error)
+
+    throw new InternalServerErrorException('Unexpected error, check server logs')
   }
 }
