@@ -11,6 +11,9 @@ export class Item {
     @Column({ type: 'text', nullable: true })
     description?: string
 
+    @Column({ type: 'text', nullable: true })
+    icon?: string
+
     // TODO: Relacionarlo usuarios
     // TODO: Relacionarlo con maletas
 

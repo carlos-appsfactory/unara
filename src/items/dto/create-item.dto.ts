@@ -9,4 +9,8 @@ export class CreateItemDto {
     @IsOptional()
     @IsString()
     description?: string;
+
+    @IsOptional()
+    @IsString()
+    icon?: string
 }
