@@ -52,8 +52,23 @@ export class ItemsService {
     return item
   }
 
-  update(id: number, updateItemDto: UpdateItemDto) {
-    return `This action updates a #${id} item`;
+  async update(id: string, updateItemDto: UpdateItemDto) {
+    const item = await this.itemRepository.preload({
+      id,
+      ...updateItemDto
+    })
+
+    if (!item){
+      throw new NotFoundException(`Item with id ${id} not found`)
+    }
+
+    try {
+      await this.itemRepository.save(item)
+      return item
+    
+    } catch (error) {
+      this.handleExceptions(error)
+    }
   }
 
   remove(id: number) {
