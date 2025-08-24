@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -42,8 +42,14 @@ export class ItemsService {
     return query.getMany()
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} item`;
+  async findOne(id: string) {
+    const item = await this.itemRepository.findOneBy({ id })
+
+    if (!item){
+      throw new NotFoundException(`Item with id ${id} not found`)
+    }
+
+    return item
   }
 
   update(id: number, updateItemDto: UpdateItemDto) {
