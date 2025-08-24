@@ -1,7 +1,9 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Luggage } from ".";
 
 @Entity()
 export class LuggageCategory {
+
     @PrimaryGeneratedColumn('uuid')
     id: string
 
@@ -13,6 +15,12 @@ export class LuggageCategory {
 
     @Column('text')
     image: string
+
+    @OneToMany(
+        () => Luggage,
+        (luggage) => luggage.category
+    )
+    luggage: Luggage[]
 
     @CreateDateColumn()
     createdAt: Date
