@@ -71,8 +71,14 @@ export class ItemsService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} item`;
+  async remove(id: string) {
+    const item = await this.itemRepository.findOneBy({ id })
+
+    if (!item){
+      throw new NotFoundException(`Item with id ${id} not found`)
+    }
+
+    this.itemRepository.remove(item)
   }
 
   private handleExceptions(error: any){
