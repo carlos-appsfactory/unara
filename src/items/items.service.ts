@@ -4,6 +4,7 @@ import { UpdateItemDto } from './dto/update-item.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Item } from './entities/item.entity';
 import { Repository } from 'typeorm';
+import { FilterItemDto } from './dto/filter-item.dto';
 
 @Injectable()
 export class ItemsService {
@@ -25,8 +26,20 @@ export class ItemsService {
     }
   }
 
-  findAll() {
-    return `This action returns all items`;
+  async findAll(filterItemDto: FilterItemDto) {
+    const { 
+      limit = 10, 
+      offset = 0,
+      name
+    } = filterItemDto
+
+    const query = this.itemRepository.createQueryBuilder('item')
+
+    if (name) query.andWhere('item.name ILIKE :name', { name: `%${name}%`})
+
+    query.skip(offset).take(limit)
+
+    return query.getMany()
   }
 
   findOne(id: number) {
