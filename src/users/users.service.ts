@@ -79,7 +79,7 @@ export class UsersService {
     const user = await this.userRepository.findOneBy({ id })
 
     if (!user){
-      throw new NotFoundException(`Luggage with id ${id} not found`)
+      throw new NotFoundException(`User with id ${id} not found`)
     }
 
     this.userRepository.remove(user)
