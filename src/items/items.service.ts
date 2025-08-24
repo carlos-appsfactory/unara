@@ -14,8 +14,15 @@ export class ItemsService {
     private readonly itemRepository: Repository<Item>
   ){}
 
-  create(createItemDto: CreateItemDto) {
-    return 'This action adds a new item';
+  async create(createItemDto: CreateItemDto) {
+    try {
+      const item = this.itemRepository.create(createItemDto)
+      await this.itemRepository.save(item)
+      return item
+
+    } catch (error) {
+      this.handleExceptions(error)
+    }
   }
 
   findAll() {
