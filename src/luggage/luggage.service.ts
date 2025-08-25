@@ -45,14 +45,16 @@ export class LuggageService {
       limit = 10, 
       offset = 0,
       name,
-      type,
+      categoryId,
     } = filterLuggageDto
 
-    const query = this.luggageRepository.createQueryBuilder('luggage')
+    const query = this.luggageRepository
+                    .createQueryBuilder('luggage')
+                    .leftJoinAndSelect('luggage.category', 'category')
 
     if (name) query.andWhere('luggage.name ILIKE :name', { name: `%${name}%`})
-    
-    if (type) query.andWhere('luggage.type = :type', { type: type})
+      
+    if (categoryId) query.andWhere('category.id = :categoryId', { categoryId})
 
     query.skip(offset).take(limit)
 
