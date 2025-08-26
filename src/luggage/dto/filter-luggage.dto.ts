@@ -1,6 +1,5 @@
-import { IsEnum, IsOptional, IsString } from "class-validator"
+import { IsOptional, IsString, IsUUID } from "class-validator"
 import { PaginationDto } from "src/common/dto/pagination.dto"
-import { LuggageType } from "../entities/luggage.entity"
 
 export class FilterLuggageDto extends PaginationDto{
     @IsOptional()
@@ -8,6 +7,6 @@ export class FilterLuggageDto extends PaginationDto{
     name?: string
 
     @IsOptional()
-    @IsEnum(LuggageType)
-    type: LuggageType
+    @IsUUID()
+    categoryId?: string
 }
