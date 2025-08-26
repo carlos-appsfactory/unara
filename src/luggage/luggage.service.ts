@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Luggage } from './entities/luggage.entity';
 import { FilterLuggageDto } from './dto/filter-luggage.dto';
+import { LuggageCategory } from 'src/luggage-categories/entities/luggage-category.entity';
 
 @Injectable()
 export class LuggageService {
@@ -13,12 +14,25 @@ export class LuggageService {
   
   constructor(
     @InjectRepository(Luggage)
-    private readonly luggageRepository: Repository<Luggage>
+    private readonly luggageRepository: Repository<Luggage>,
+
+    @InjectRepository(LuggageCategory)
+    private readonly luggageCategoryRepository: Repository<LuggageCategory>,
   ){}
 
   async create(createLuggageDto: CreateLuggageDto) {
     try {
-      const luggage = this.luggageRepository.create(createLuggageDto)
+      const { categoryId, ...luggageData } = createLuggageDto
+
+      const category = await this.luggageCategoryRepository.findOneBy({ id: categoryId })
+
+      if (!category) throw new NotFoundException(`Category with id ${categoryId} not found`)
+
+      const luggage = this.luggageRepository.create({
+        ...luggageData,
+        category
+      })
+      
       await this.luggageRepository.save(luggage)
       return luggage
 
