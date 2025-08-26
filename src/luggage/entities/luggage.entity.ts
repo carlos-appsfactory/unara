@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { LuggageCategory } from "src/luggage-categories/entities/luggage-category.entity";
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 export enum LuggageType {
   SMALL_BACKPACK = "small_backpack",
@@ -16,11 +17,11 @@ export class Luggage {
     @Column('text')
     name: string
 
-    @Column({
-        type: "enum",
-        enum: LuggageType,
-    })
-    type: LuggageType
+    @ManyToOne(
+        () => LuggageCategory,
+        (category) => category.luggage
+    )
+    category: LuggageCategory
 
     // TODO viaje asociado
     // TODO usuario asociado
