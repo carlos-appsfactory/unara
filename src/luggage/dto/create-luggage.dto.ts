@@ -1,5 +1,4 @@
-import { IsEnum, IsNotEmpty, IsString } from "class-validator"
-import { LuggageType } from "../entities/luggage.entity"
+import { IsNotEmpty, IsString, IsUUID } from "class-validator"
 
 
 export class CreateLuggageDto {
@@ -7,6 +6,7 @@ export class CreateLuggageDto {
     @IsNotEmpty()
     name: string
 
-    @IsEnum(LuggageType)
-    type: LuggageType
+    @IsUUID()
+    @IsNotEmpty()
+    categoryId: string
 }
