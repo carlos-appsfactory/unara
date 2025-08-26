@@ -10,5 +10,6 @@ import { LuggageCategory } from './entities/luggage-category.entity';
   imports: [
     TypeOrmModule.forFeature([LuggageCategory]),
   ],
+  exports: [TypeOrmModule],
 })
 export class LuggageCategoriesModule {}
