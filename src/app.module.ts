@@ -5,6 +5,7 @@ import { LuggageModule } from './luggage/luggage.module';
 import { CommonModule } from './common/common.module';
 import { UsersModule } from './users/users.module';
 import { ItemsModule } from './items/items.module';
+import { LuggageCategoriesModule } from './luggage-categories/luggage-categories.module';
 
 @Module({
   imports: [
@@ -27,7 +28,9 @@ import { ItemsModule } from './items/items.module';
 
     UsersModule,
 
-    ItemsModule
+    ItemsModule,
+
+    LuggageCategoriesModule
   ],
 })
 export class AppModule {}
