@@ -76,9 +76,19 @@ export class LuggageService {
   }
 
   async update(id: string, updateLuggageDto: UpdateLuggageDto) {
+    const { categoryId, ...luggageData } = updateLuggageDto;
+
+    let category: LuggageCategory | null = null;
+    if (categoryId) {
+      category = await this.luggageCategoryRepository.findOneBy({ id: categoryId })
+
+      if (!category) throw new NotFoundException(`Category with id ${categoryId} not found`)
+    }
+
     const luggage = await this.luggageRepository.preload({
       id,
-      ...updateLuggageDto
+      ...luggageData,
+      ...(category ? { category } : {}),
     })
 
     if (!luggage){
