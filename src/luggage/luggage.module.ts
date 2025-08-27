@@ -6,7 +6,8 @@ import { Luggage } from './entities/luggage.entity';
 import { LuggageCategoriesModule } from 'src/luggage-categories/luggage-categories.module';
 import { LuggageItemsController } from './controllers/luggage-items.controller';
 import { LuggageItemsService } from './services/luggage-items.service';
-
+import { LuggageItem } from './entities/luggage-item.entity';
+import { ItemsModule } from 'src/items/items.module';
 
 @Module({
   controllers: [
@@ -18,8 +19,12 @@ import { LuggageItemsService } from './services/luggage-items.service';
     LuggageItemsService,
   ],
   imports: [
-    TypeOrmModule.forFeature([ Luggage ]),
-    LuggageCategoriesModule
+    TypeOrmModule.forFeature([ 
+      Luggage,
+      LuggageItem
+    ]),
+    LuggageCategoriesModule,
+    ItemsModule,
   ]
 })
 export class LuggageModule {}
