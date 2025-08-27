@@ -19,7 +19,8 @@ export class Luggage {
 
     @ManyToOne(
         () => LuggageCategory,
-        (category) => category.luggage
+        (category) => category.luggage,
+        { nullable: false }
     )
     category: LuggageCategory
 
