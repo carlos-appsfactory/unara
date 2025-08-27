@@ -1,5 +1,6 @@
 import { ItemCategory } from "src/item-categories/entities/item-category.entity";
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { LuggageItem } from "src/luggage/entities/luggage-item.entity";
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class Item {
@@ -21,9 +22,14 @@ export class Item {
         { nullable: false }
     )
     category: ItemCategory
+    
+    @OneToMany(
+        () => LuggageItem,
+        luggageItem => luggageItem.item
+    )
+    luggageItems: LuggageItem[];
 
     // TODO: Relacionarlo usuarios
-    // TODO: Relacionarlo con maletas
 
     @CreateDateColumn()
     createdAt: Date
