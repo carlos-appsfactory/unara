@@ -19,7 +19,7 @@ export class ItemCategory {
         () => Item,
         (item) => item.category
     )
-    item: Item[]
+    items: Item[]
 
     @CreateDateColumn()
     createdAt: Date

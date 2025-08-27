@@ -17,7 +17,8 @@ export class Item {
 
     @ManyToOne(
         () => ItemCategory,
-        (category) => category.item
+        (category) => category.items,
+        { nullable: false }
     )
     category: ItemCategory
 
