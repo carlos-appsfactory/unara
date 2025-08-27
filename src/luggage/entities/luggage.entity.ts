@@ -1,13 +1,6 @@
 import { LuggageCategory } from "src/luggage-categories/entities/luggage-category.entity";
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
-export enum LuggageType {
-  SMALL_BACKPACK = "small_backpack",
-  LARGE_BACKPACK = "large_backpack",
-  SMALL_SUITCASE = "small_suitcase",
-  LARGE_SUITCASE = "large_suitcase",
-}
-
 @Entity()
 export class Luggage {
 
