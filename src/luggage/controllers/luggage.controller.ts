@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
-import { LuggageService } from './luggage.service';
-import { CreateLuggageDto } from './dto/create-luggage.dto';
-import { UpdateLuggageDto } from './dto/update-luggage.dto';
-import { FilterLuggageDto } from './dto/filter-luggage.dto';
+import { LuggageService } from '../luggage.service';
+import { CreateLuggageDto } from '../dto/create-luggage.dto';
+import { UpdateLuggageDto } from '../dto/update-luggage.dto';
+import { FilterLuggageDto } from '../dto/filter-luggage.dto';
 
 @Controller('luggage')
 export class LuggageController {
