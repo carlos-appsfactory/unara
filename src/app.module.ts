@@ -6,6 +6,7 @@ import { CommonModule } from './common/common.module';
 import { UsersModule } from './users/users.module';
 import { ItemsModule } from './items/items.module';
 import { LuggageCategoriesModule } from './luggage-categories/luggage-categories.module';
+import { ItemCategoriesModule } from './item-categories/item-categories.module';
 
 @Module({
   imports: [
@@ -30,7 +31,9 @@ import { LuggageCategoriesModule } from './luggage-categories/luggage-categories
 
     ItemsModule,
 
-    LuggageCategoriesModule
+    LuggageCategoriesModule,
+
+    ItemCategoriesModule
   ],
 })
 export class AppModule {}
