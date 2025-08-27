@@ -6,7 +6,7 @@ export class LuggageCategory {
     @PrimaryGeneratedColumn('uuid')
     id: string
 
-    @Column('text')
+    @Column('text', { unique: true })
     name: string
 
     @Column({ type: 'text', nullable: true })

@@ -9,4 +9,8 @@ export class CreateLuggageCategoryDto {
     @IsString()
     @IsNotEmpty()
     description?: string
+
+    @IsString()
+    @IsNotEmpty()
+    image: string
 }
