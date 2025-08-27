@@ -9,8 +9,9 @@ import { ItemCategoriesModule } from 'src/item-categories/item-categories.module
   controllers: [ItemsController],
   providers: [ItemsService],
   imports: [
-    TypeOrmModule.forFeature([ Item]),
+    TypeOrmModule.forFeature([ Item ]),
     ItemCategoriesModule
-  ]
+  ],
+  exports: [TypeOrmModule],
 })
 export class ItemsModule {}
