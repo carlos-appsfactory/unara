@@ -1,0 +1,117 @@
+
+@Injectable()
+export class LuggageItemsService {
+
+  private readonly logger = new Logger('LuggageService')
+  
+  constructor(
+    @InjectRepository(Luggage)
+    private readonly luggageRepository: Repository<Luggage>,
+
+    @InjectRepository(LuggageCategory)
+    private readonly luggageCategoryRepository: Repository<LuggageCategory>,
+  ){}
+
+  async create(createLuggageDto: CreateLuggageDto) {
+    try {
+      const { categoryId, ...luggageData } = createLuggageDto
+
+      const category = await this.luggageCategoryRepository.findOneBy({ id: categoryId })
+
+      if (!category) throw new NotFoundException(`Category with id ${categoryId} not found`)
+
+      const luggage = this.luggageRepository.create({
+        ...luggageData,
+        category
+      })
+      
+      await this.luggageRepository.save(luggage)
+      return luggage
+
+    } catch (error) {
+      this.handleExceptions(error)
+    }
+  }
+
+  async findAll(filterLuggageDto: FilterLuggageDto) {
+    const { 
+      limit = 10, 
+      offset = 0,
+      name,
+      categoryId,
+    } = filterLuggageDto
+
+    const query = this.luggageRepository
+                    .createQueryBuilder('luggage')
+                    .leftJoinAndSelect('luggage.category', 'category')
+
+    if (name) query.andWhere('luggage.name ILIKE :name', { name: `%${name}%`})
+    
+    if (categoryId) query.andWhere('category.id = :categoryId', { categoryId})
+
+    query.skip(offset).take(limit)
+
+    return query.getMany()
+  }
+
+  async findOne(id: string) {
+    const luggage = await this.luggageRepository.findOne({
+      where: { id },
+      relations: {  category: true }
+    })
+
+    if (!luggage){
+      throw new NotFoundException(`Luggage with id ${id} not found`)
+    }
+
+    return luggage
+  }
+
+  async update(id: string, updateLuggageDto: UpdateLuggageDto) {
+    const { categoryId, ...luggageData } = updateLuggageDto;
+
+    let category: LuggageCategory | null = null;
+    if (categoryId) {
+      category = await this.luggageCategoryRepository.findOneBy({ id: categoryId })
+
+      if (!category) throw new NotFoundException(`Category with id ${categoryId} not found`)
+    }
+
+    const luggage = await this.luggageRepository.preload({
+      id,
+      ...luggageData,
+      ...(category ? { category } : {}),
+    })
+
+    if (!luggage){
+      throw new NotFoundException(`Luggage with id ${id} not found`)
+    }
+
+    try {
+      await this.luggageRepository.save(luggage)
+      return luggage
+    
+    } catch (error) {
+      this.handleExceptions(error)
+    }
+  }
+
+  async remove(id: string) {
+    const luggage = await this.luggageRepository.findOneBy({ id: id })
+
+    if (!luggage){
+      throw new NotFoundException(`Luggage with id ${id} not found`)
+    }
+
+    this.luggageRepository.remove(luggage)
+  }
+
+  private handleExceptions(error: any){
+    // TODO: Añadir los códigos de error que veamos que se van dando
+    // if (error.code === 0) throw new BadRequestException(error.detail)
+
+    this.logger.error(error)
+
+    throw new InternalServerErrorException('Unexpected error, check server logs')
+  }
+}
