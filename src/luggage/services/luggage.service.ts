@@ -1,11 +1,11 @@
 import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
-import { CreateLuggageDto } from './dto/create-luggage.dto';
-import { UpdateLuggageDto } from './dto/update-luggage.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Luggage } from './entities/luggage.entity';
-import { FilterLuggageDto } from './dto/filter-luggage.dto';
 import { LuggageCategory } from 'src/luggage-categories/entities/luggage-category.entity';
+import { Luggage } from '../entities/luggage.entity';
+import { CreateLuggageDto } from '../dto/create-luggage.dto';
+import { FilterLuggageDto } from '../dto/filter-luggage.dto';
+import { UpdateLuggageDto } from '../dto/update-luggage.dto';
 
 @Injectable()
 export class LuggageService {

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { LuggageService } from './luggage.service';
+import { LuggageService } from './services/luggage.service';
 import { LuggageController } from './controllers/luggage.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Luggage } from './entities/luggage.entity';
