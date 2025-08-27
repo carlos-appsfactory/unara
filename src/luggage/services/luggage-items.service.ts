@@ -1,3 +1,9 @@
+import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common"
+import { Luggage } from "../entities/luggage.entity"
+import { InjectRepository } from "@nestjs/typeorm"
+import { Repository } from "typeorm"
+import { Item } from "src/items/entities/item.entity"
+import { UpsertLuggageItemDto } from "../dto/upsert-luggage-item.dto"
 
 @Injectable()
 export class LuggageItemsService {
@@ -8,102 +14,24 @@ export class LuggageItemsService {
     @InjectRepository(Luggage)
     private readonly luggageRepository: Repository<Luggage>,
 
-    @InjectRepository(LuggageCategory)
-    private readonly luggageCategoryRepository: Repository<LuggageCategory>,
+    @InjectRepository(Item)
+    private readonly itemRepository: Repository<Item>,
   ){}
 
-  async create(createLuggageDto: CreateLuggageDto) {
-    try {
-      const { categoryId, ...luggageData } = createLuggageDto
-
-      const category = await this.luggageCategoryRepository.findOneBy({ id: categoryId })
-
-      if (!category) throw new NotFoundException(`Category with id ${categoryId} not found`)
-
-      const luggage = this.luggageRepository.create({
-        ...luggageData,
-        category
-      })
-      
-      await this.luggageRepository.save(luggage)
-      return luggage
-
-    } catch (error) {
-      this.handleExceptions(error)
-    }
+  async upsert(luggageId: string, itemId: string, dto: UpsertLuggageItemDto) {
+    return `This action updates a #${itemId} item for luggage #${luggageId}`;    
   }
 
-  async findAll(filterLuggageDto: FilterLuggageDto) {
-    const { 
-      limit = 10, 
-      offset = 0,
-      name,
-      categoryId,
-    } = filterLuggageDto
-
-    const query = this.luggageRepository
-                    .createQueryBuilder('luggage')
-                    .leftJoinAndSelect('luggage.category', 'category')
-
-    if (name) query.andWhere('luggage.name ILIKE :name', { name: `%${name}%`})
-    
-    if (categoryId) query.andWhere('category.id = :categoryId', { categoryId})
-
-    query.skip(offset).take(limit)
-
-    return query.getMany()
+  async findAll(luggageId: string) {
+    return `This action returns all items for luggage #${luggageId}`;
   }
 
-  async findOne(id: string) {
-    const luggage = await this.luggageRepository.findOne({
-      where: { id },
-      relations: {  category: true }
-    })
-
-    if (!luggage){
-      throw new NotFoundException(`Luggage with id ${id} not found`)
-    }
-
-    return luggage
+  async findOne(luggageId: string, itemId: string) {
+    return `This action returns item #${itemId} for luggage #${luggageId}`;
   }
 
-  async update(id: string, updateLuggageDto: UpdateLuggageDto) {
-    const { categoryId, ...luggageData } = updateLuggageDto;
-
-    let category: LuggageCategory | null = null;
-    if (categoryId) {
-      category = await this.luggageCategoryRepository.findOneBy({ id: categoryId })
-
-      if (!category) throw new NotFoundException(`Category with id ${categoryId} not found`)
-    }
-
-    const luggage = await this.luggageRepository.preload({
-      id,
-      ...luggageData,
-      ...(category ? { category } : {}),
-    })
-
-    if (!luggage){
-      throw new NotFoundException(`Luggage with id ${id} not found`)
-    }
-
-    try {
-      await this.luggageRepository.save(luggage)
-      return luggage
-    
-    } catch (error) {
-      this.handleExceptions(error)
-    }
-  }
-
-  async remove(id: string) {
-    const luggage = await this.luggageRepository.findOneBy({ id: id })
-
-    if (!luggage){
-      throw new NotFoundException(`Luggage with id ${id} not found`)
-    }
-
-    this.luggageRepository.remove(luggage)
+  async remove(luggageId: string,itemId: string) {
+    return `This action removes item #${itemId} for luggage #${luggageId}`;
   }
 
   private handleExceptions(error: any){
