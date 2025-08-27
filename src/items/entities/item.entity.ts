@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { LuggageCategory } from "src/luggage-categories/entities/luggage-category.entity";
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class Item {
@@ -13,6 +14,12 @@ export class Item {
 
     @Column({ type: 'text', nullable: true })
     icon?: string
+
+    @ManyToOne(
+        () => LuggageCategory,
+        (category) => category.luggage
+    )
+    category: LuggageCategory
 
     // TODO: Relacionarlo usuarios
     // TODO: Relacionarlo con maletas
