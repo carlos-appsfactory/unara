@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Luggage } from './entities/luggage.entity';
 import { LuggageCategoriesModule } from 'src/luggage-categories/luggage-categories.module';
 import { LuggageItemsController } from './controllers/luggage-items.controller';
+import { LuggageItemsService } from './services/luggage-items.service';
 
 
 @Module({
@@ -12,7 +13,10 @@ import { LuggageItemsController } from './controllers/luggage-items.controller';
     LuggageController,
     LuggageItemsController,
   ],
-  providers: [LuggageService],
+  providers: [
+    LuggageService,
+    LuggageItemsService,
+  ],
   imports: [
     TypeOrmModule.forFeature([ Luggage ]),
     LuggageCategoriesModule
