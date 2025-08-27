@@ -1,5 +1,6 @@
 import { LuggageCategory } from "src/luggage-categories/entities/luggage-category.entity";
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { LuggageItem } from "./luggage-item.entity";
 
 @Entity()
 export class Luggage {
@@ -16,6 +17,13 @@ export class Luggage {
         { nullable: false }
     )
     category: LuggageCategory
+    
+    @OneToMany(
+      () => LuggageItem, 
+      luggageItem => luggageItem.luggage, 
+      { cascade: true }
+    )
+    luggageItems: LuggageItem[];
 
     // TODO viaje asociado
     // TODO usuario asociado
