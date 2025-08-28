@@ -66,7 +66,13 @@ export class LuggageItemsService {
   }
 
   async findAll(luggageId: string) {
-    return `This action returns all items for luggage #${luggageId}`;
+    const luggageItems = await this.luggageItemRepository
+                                   .createQueryBuilder('luggageItem')
+                                   .leftJoinAndSelect('luggageItem.item', 'item')
+                                   .where('luggageItem.luggageId = :luggageId', { luggageId })
+                                   .getMany();
+
+    return luggageItems;
   }
 
   async findOne(luggageId: string, itemId: string) {
