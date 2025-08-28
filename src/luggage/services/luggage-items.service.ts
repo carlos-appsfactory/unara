@@ -91,7 +91,16 @@ export class LuggageItemsService {
   }
 
   async remove(luggageId: string,itemId: string) {
-    return `This action removes item #${itemId} for luggage #${luggageId}`;
+    const result = await this.luggageItemRepository
+                             .createQueryBuilder()
+                             .delete()
+                             .from(LuggageItem)
+                             .where('luggageId = :luggageId AND itemId = :itemId', { luggageId, itemId })
+                             .execute()
+    
+    if (result.affected === 0) {
+      throw new NotFoundException(`Item with id ${itemId} not found in luggage ${luggageId}`)
+    }
   }
 
   private handleExceptions(error: any){
