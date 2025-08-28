@@ -1,9 +1,10 @@
-import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common"
+import { Injectable, InternalServerErrorException, Logger, NotFoundException } from "@nestjs/common"
 import { Luggage } from "../entities/luggage.entity"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
 import { Item } from "src/items/entities/item.entity"
 import { UpsertLuggageItemDto } from "../dto/upsert-luggage-item.dto"
+import { LuggageItem } from "../entities/luggage-item.entity"
 
 @Injectable()
 export class LuggageItemsService {
@@ -16,10 +17,52 @@ export class LuggageItemsService {
 
     @InjectRepository(Item)
     private readonly itemRepository: Repository<Item>,
+
+    @InjectRepository(LuggageItem)
+    private readonly luggageItemRepository: Repository<LuggageItem>,
   ){}
 
   async upsert(luggageId: string, itemId: string, dto: UpsertLuggageItemDto) {
-    return `This action updates a #${itemId} item for luggage #${luggageId}`;    
+    const luggage = await this.luggageRepository.findOne({ where: { id: luggageId } })
+    if (!luggage) {
+      throw new NotFoundException(`Luggage with id ${luggageId} not found`)
+    }
+
+    const item = await this.itemRepository.findOne({ where: { id: itemId } })
+    if (!item) {
+      throw new NotFoundException(`Item with id ${itemId} not found`)
+    }
+
+    try{
+      const updateResult = await this.luggageItemRepository
+                                     .createQueryBuilder()
+                                     .update(LuggageItem)
+                                     .set({ quantity: dto.quantity })
+                                     .where('luggageId = :luggageId AND itemId = :itemId', { luggageId, itemId })
+                                     .execute()
+                                     
+      if (updateResult.affected === 0) {
+        await this.luggageItemRepository
+                  .createQueryBuilder()
+                  .insert()
+                  .into(LuggageItem)
+                  .values({
+                    luggage: { id: luggageId },
+                    item: { id: itemId },
+                    quantity: dto.quantity,
+                  })
+                  .execute();
+      }
+      
+      return await this.luggageItemRepository
+                       .createQueryBuilder('li')
+                       .leftJoinAndSelect('li.item', 'item')
+                       .where('li.luggageId = :luggageId AND li.itemId = :itemId', { luggageId, itemId })
+                       .getOne();
+
+    } catch (error) {
+      this.handleExceptions(error)
+    }
   }
 
   async findAll(luggageId: string) {
