@@ -14,7 +14,7 @@ export class Item {
     description?: string
 
     @Column({ type: 'text', nullable: true })
-    icon?: string
+    image?: string
 
     @ManyToOne(
         () => ItemCategory,
