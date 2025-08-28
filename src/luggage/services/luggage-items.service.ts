@@ -76,7 +76,18 @@ export class LuggageItemsService {
   }
 
   async findOne(luggageId: string, itemId: string) {
-    return `This action returns item #${itemId} for luggage #${luggageId}`;
+    const luggageItem = await this.luggageItemRepository
+                                  .createQueryBuilder('luggageItem')
+                                  .leftJoinAndSelect('luggageItem.item', 'item')
+                                  .where('luggageItem.luggageId = :luggageId', { luggageId })
+                                  .andWhere('luggageItem.itemId = :itemId', { itemId })
+                                  .getOne();
+    
+    if (!luggageItem) {
+      throw new NotFoundException(`Item with id ${itemId} not found in luggage ${luggageId}`);
+    }
+
+    return luggageItem;
   }
 
   async remove(luggageId: string,itemId: string) {
