@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 // import { LuggageModule } from './luggage/luggage.module';
 import { CommonModule } from './common/common.module';
 import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 // import { ItemsModule } from './items/items.module';
 // import { LuggageCategoriesModule } from './luggage-categories/luggage-categories.module';
 // import { ItemCategoriesModule } from './item-categories/item-categories.module';
@@ -31,6 +32,8 @@ import { UsersModule } from './users/users.module';
     CommonModule,
 
     UsersModule,
+
+    AuthModule,
 
     // ItemsModule,
 

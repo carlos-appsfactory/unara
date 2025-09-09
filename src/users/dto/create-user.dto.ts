@@ -5,6 +5,7 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
+import { IsStrongPassword } from '../../auth/decorators/password-validation.decorator';
 
 export class CreateUserDto {
   @IsString()
@@ -23,6 +24,7 @@ export class CreateUserDto {
 
   @IsString()
   @IsNotEmpty()
+  @IsStrongPassword()
   password: string;
 
   @IsString()
