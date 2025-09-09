@@ -11,24 +11,30 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  fullname: string;
-
   @Column({ type: 'varchar', length: 255, unique: true })
   email: string;
 
   @Column({ type: 'varchar', length: 255, unique: true })
   username: string;
 
-  @Column('text')
-  password: string;
+  @Column({ type: 'text', name: 'password_hash' })
+  password_hash: string;
+
+  @Column({ type: 'varchar', length: 255 })
+  fullname: string;
 
   @Column({ type: 'text', nullable: true })
   profile_picture?: string;
 
-  @CreateDateColumn()
+  @Column({ type: 'boolean', default: false })
+  email_verified: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  last_login?: Date;
+
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }

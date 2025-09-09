@@ -19,8 +19,11 @@ import { UsersModule } from './users/users.module';
       database: process.env.DB_NAME,
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
-      autoLoadEntities: true,
-      synchronize: true, // TODO: Esto se tiene que quitar en producción
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
+      migrationsTableName: 'typeorm_migrations',
+      synchronize: false,
+      logging: process.env.NODE_ENV === 'development',
     }),
 
     // LuggageModule,

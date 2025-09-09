@@ -22,7 +22,11 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     try {
-      const user = this.userRepository.create(createUserDto);
+      const { password, ...userData } = createUserDto;
+      const user = this.userRepository.create({
+        ...userData,
+        password_hash: password, // Map password to password_hash
+      });
       await this.userRepository.save(user);
       return user;
     } catch (error) {
