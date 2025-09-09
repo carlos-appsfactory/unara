@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { LuggageModule } from './luggage/luggage.module';
+// import { LuggageModule } from './luggage/luggage.module';
 import { CommonModule } from './common/common.module';
 import { UsersModule } from './users/users.module';
-import { ItemsModule } from './items/items.module';
-import { LuggageCategoriesModule } from './luggage-categories/luggage-categories.module';
-import { ItemCategoriesModule } from './item-categories/item-categories.module';
+// import { ItemsModule } from './items/items.module';
+// import { LuggageCategoriesModule } from './luggage-categories/luggage-categories.module';
+// import { ItemCategoriesModule } from './item-categories/item-categories.module';
 
 @Module({
   imports: [
@@ -23,17 +23,17 @@ import { ItemCategoriesModule } from './item-categories/item-categories.module';
       synchronize: true, // TODO: Esto se tiene que quitar en producción
     }),
 
-    LuggageModule,
+    // LuggageModule,
 
     CommonModule,
 
     UsersModule,
 
-    ItemsModule,
+    // ItemsModule,
 
-    LuggageCategoriesModule,
+    // LuggageCategoriesModule,
 
-    ItemCategoriesModule
+    // ItemCategoriesModule
   ],
 })
 export class AppModule {}
