@@ -2,19 +2,19 @@
 
 ## PostgreSQL Database Foundation
 
-The Unara application now has a complete PostgreSQL database foundation with authentication capabilities.
+The Unara application now has a complete PostgreSQL database foundation with user data persistence capabilities.
 
-## User Account System
+## User Data Storage
 
-A comprehensive user account system has been implemented with all necessary fields for user authentication and management:
+A comprehensive user data storage system has been implemented with all necessary fields for user information and authentication data:
 
-- **User Identification**: Each user gets a unique identifier that never changes
-- **Login Credentials**: Users can log in with either email address or username, both must be unique
-- **Password Security**: User passwords are properly secured and never stored in plain text
-- **Email Verification**: System tracks whether users have verified their email addresses
-- **Profile Information**: Users can have a full name and profile picture
-- **Activity Tracking**: System records when users last logged in
-- **Automatic Timestamps**: All user accounts automatically track when they were created and last updated
+- **User Identification**: Each user gets a unique UUID identifier that never changes
+- **Login Credentials**: Email address and username fields with unique constraints
+- **Password Storage**: Password hash field for secure password storage
+- **Email Verification**: Boolean field tracking email verification status
+- **Profile Information**: Full name and profile picture URL fields
+- **Activity Tracking**: Timestamp field for last login tracking
+- **Automatic Timestamps**: Created and updated timestamp fields with automatic management
 
 *File: `src/users/entities/user.entity.ts` - Enhanced with authentication fields including password_hash, email_verified, last_login, and PostgreSQL-compatible UUID generation*
 
