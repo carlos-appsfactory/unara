@@ -6,19 +6,25 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PasswordService } from './services/password.service';
 import { JwtAuthService } from './services/jwt-auth.service';
 import { RefreshTokenService } from './services/refresh-token.service';
+import { AuthService } from './services/auth.service';
+import { EmailVerificationService } from './services/email-verification.service';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from './guards/optional-jwt.guard';
+import { AuthController } from './controllers/auth.controller';
+import { User } from '../users/entities/user.entity';
+import { IsEmailUniqueConstraint } from './validators/is-email-unique.validator';
+import { IsUsernameUniqueConstraint } from './validators/is-username-unique.validator';
 
 @Module({
   imports: [
     ConfigModule,
     PassportModule,
-    TypeOrmModule.forFeature([RefreshToken]),
+    TypeOrmModule.forFeature([RefreshToken, User]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_ACCESS_SECRET'),
         signOptions: {
           expiresIn: configService.get<string>('JWT_ACCESS_EXPIRES_IN', '15m'),
@@ -28,18 +34,25 @@ import { OptionalJwtAuthGuard } from './guards/optional-jwt.guard';
       inject: [ConfigService],
     }),
   ],
+  controllers: [AuthController],
   providers: [
-    PasswordService, 
-    RefreshTokenService, 
+    PasswordService,
+    RefreshTokenService,
     JwtAuthService,
+    AuthService,
+    EmailVerificationService,
     JwtStrategy,
     JwtAuthGuard,
     OptionalJwtAuthGuard,
+    IsEmailUniqueConstraint,
+    IsUsernameUniqueConstraint,
   ],
   exports: [
-    PasswordService, 
-    RefreshTokenService, 
+    PasswordService,
+    RefreshTokenService,
     JwtAuthService,
+    AuthService,
+    EmailVerificationService,
     JwtAuthGuard,
     OptionalJwtAuthGuard,
   ],

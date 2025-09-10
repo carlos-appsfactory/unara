@@ -48,7 +48,9 @@ describe('JwtStrategy', () => {
         iat: validPayload.iat,
         exp: validPayload.exp,
       });
-      expect(mockJwtAuthService.validateToken).toHaveBeenCalledWith('validated-by-passport');
+      expect(mockJwtAuthService.validateToken).toHaveBeenCalledWith(
+        'validated-by-passport',
+      );
     });
 
     it('should throw UnauthorizedException when payload is missing', async () => {

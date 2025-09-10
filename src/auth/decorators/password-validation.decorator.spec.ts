@@ -1,5 +1,8 @@
 import { validate } from 'class-validator';
-import { IsStrongPassword, IsStrongPasswordConstraint } from './password-validation.decorator';
+import {
+  IsStrongPassword,
+  IsStrongPasswordConstraint,
+} from './password-validation.decorator';
 import { IsString, IsNotEmpty } from 'class-validator';
 
 class TestPasswordDto {
@@ -31,7 +34,9 @@ describe('IsStrongPassword Decorator', () => {
 
       const errors = await validate(dto);
       expect(errors).toHaveLength(1);
-      expect(errors[0].constraints?.isStrongPassword).toContain('at least 8 characters');
+      expect(errors[0].constraints?.isStrongPassword).toContain(
+        'at least 8 characters',
+      );
     });
 
     it('should reject password without uppercase letter', async () => {
@@ -40,7 +45,9 @@ describe('IsStrongPassword Decorator', () => {
 
       const errors = await validate(dto);
       expect(errors).toHaveLength(1);
-      expect(errors[0].constraints?.isStrongPassword).toContain('at least 1 uppercase letter');
+      expect(errors[0].constraints?.isStrongPassword).toContain(
+        'at least 1 uppercase letter',
+      );
     });
 
     it('should reject password without lowercase letter', async () => {
@@ -49,7 +56,9 @@ describe('IsStrongPassword Decorator', () => {
 
       const errors = await validate(dto);
       expect(errors).toHaveLength(1);
-      expect(errors[0].constraints?.isStrongPassword).toContain('at least 1 lowercase letter');
+      expect(errors[0].constraints?.isStrongPassword).toContain(
+        'at least 1 lowercase letter',
+      );
     });
 
     it('should reject password without number', async () => {
@@ -58,7 +67,9 @@ describe('IsStrongPassword Decorator', () => {
 
       const errors = await validate(dto);
       expect(errors).toHaveLength(1);
-      expect(errors[0].constraints?.isStrongPassword).toContain('at least 1 number');
+      expect(errors[0].constraints?.isStrongPassword).toContain(
+        'at least 1 number',
+      );
     });
 
     it('should reject password without special character', async () => {
@@ -67,7 +78,9 @@ describe('IsStrongPassword Decorator', () => {
 
       const errors = await validate(dto);
       expect(errors).toHaveLength(1);
-      expect(errors[0].constraints?.isStrongPassword).toContain('at least 1 special character');
+      expect(errors[0].constraints?.isStrongPassword).toContain(
+        'at least 1 special character',
+      );
     });
 
     it('should reject empty password', async () => {
@@ -105,7 +118,7 @@ describe('IsStrongPassword Decorator', () => {
       const errors = await validate(dto);
       expect(errors).toHaveLength(1);
       const message = errors[0].constraints?.isStrongPassword;
-      
+
       expect(message).toContain('at least 8 characters');
       expect(message).toContain('at least 1 uppercase letter');
       expect(message).toContain('at least 1 number');
@@ -119,7 +132,7 @@ describe('IsStrongPassword Decorator', () => {
       const errors = await validate(dto);
       expect(errors).toHaveLength(1);
       const message = errors[0].constraints?.isStrongPassword;
-      
+
       expect(message).toContain('at least 1 number');
       expect(message).toContain('at least 1 special character');
       expect(message).not.toContain('at least 8 characters');
@@ -163,9 +176,40 @@ describe('IsStrongPassword Decorator', () => {
   });
 
   describe('Special Character Validation', () => {
-    const specialChars = ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '-', '=', '[', ']', '{', '}', ';', "'", ':', '"', '\\', '|', ',', '.', '<', '>', '/', '?'];
+    const specialChars = [
+      '!',
+      '@',
+      '#',
+      '$',
+      '%',
+      '^',
+      '&',
+      '*',
+      '(',
+      ')',
+      '_',
+      '+',
+      '-',
+      '=',
+      '[',
+      ']',
+      '{',
+      '}',
+      ';',
+      "'",
+      ':',
+      '"',
+      '\\',
+      '|',
+      ',',
+      '.',
+      '<',
+      '>',
+      '/',
+      '?',
+    ];
 
-    specialChars.forEach(char => {
+    specialChars.forEach((char) => {
       it(`should accept password with special character: ${char}`, async () => {
         const dto = new TestPasswordDto();
         dto.password = `StrongPass123${char}`;

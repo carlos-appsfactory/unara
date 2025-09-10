@@ -17,7 +17,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       // Don't ignore expiration
       ignoreExpiration: false,
       // Use the same secret as JWT service
-      secretOrKey: configService.get<string>('JWT_ACCESS_SECRET') || 'fallback-secret',
+      secretOrKey:
+        configService.get<string>('JWT_ACCESS_SECRET') || 'fallback-secret',
       // Algorithms allowed
       algorithms: ['HS256'],
     });
@@ -52,7 +53,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     } catch (error) {
       // Log the validation error for debugging
       console.error('JWT Strategy validation error:', error.message);
-      
+
       // Throw UnauthorizedException for any validation failure
       throw new UnauthorizedException('Token validation failed');
     }

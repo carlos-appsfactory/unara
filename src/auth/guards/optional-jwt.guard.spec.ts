@@ -17,7 +17,7 @@ describe('OptionalJwtAuthGuard', () => {
   describe('handleRequest', () => {
     it('should return user when authentication is successful', () => {
       const mockUser = { id: '123', email: 'test@example.com' };
-      
+
       const result = guard.handleRequest(
         null,
         mockUser,
@@ -52,7 +52,7 @@ describe('OptionalJwtAuthGuard', () => {
 
     it('should return null when there is an authentication error', () => {
       const error = new Error('Some error');
-      
+
       const result = guard.handleRequest(
         error,
         null,

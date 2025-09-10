@@ -3,7 +3,11 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UnauthorizedException } from '@nestjs/common';
 import { JwtAuthService } from './jwt-auth.service';
-import { JwtPayload, TokenPair, RefreshTokenPayload } from '../interfaces/jwt-payload.interface';
+import {
+  JwtPayload,
+  TokenPair,
+  RefreshTokenPayload,
+} from '../interfaces/jwt-payload.interface';
 
 describe('JwtAuthService', () => {
   let service: JwtAuthService;
@@ -167,8 +171,12 @@ describe('JwtAuthService', () => {
     });
 
     it('should throw UnauthorizedException for empty token', async () => {
-      await expect(service.validateToken('')).rejects.toThrow(UnauthorizedException);
-      await expect(service.validateToken('')).rejects.toThrow('Token is required');
+      await expect(service.validateToken('')).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(service.validateToken('')).rejects.toThrow(
+        'Token is required',
+      );
     });
 
     it('should throw UnauthorizedException for expired token', async () => {
@@ -176,8 +184,12 @@ describe('JwtAuthService', () => {
       expiredError.name = 'TokenExpiredError';
       jwtService.verifyAsync.mockRejectedValue(expiredError);
 
-      await expect(service.validateToken(mockAccessToken)).rejects.toThrow(UnauthorizedException);
-      await expect(service.validateToken(mockAccessToken)).rejects.toThrow('Access token expired');
+      await expect(service.validateToken(mockAccessToken)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(service.validateToken(mockAccessToken)).rejects.toThrow(
+        'Access token expired',
+      );
     });
 
     it('should throw UnauthorizedException for invalid token', async () => {
@@ -185,23 +197,35 @@ describe('JwtAuthService', () => {
       invalidError.name = 'JsonWebTokenError';
       jwtService.verifyAsync.mockRejectedValue(invalidError);
 
-      await expect(service.validateToken(mockAccessToken)).rejects.toThrow(UnauthorizedException);
-      await expect(service.validateToken(mockAccessToken)).rejects.toThrow('Invalid access token');
+      await expect(service.validateToken(mockAccessToken)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(service.validateToken(mockAccessToken)).rejects.toThrow(
+        'Invalid access token',
+      );
     });
 
     it('should throw UnauthorizedException for token with invalid payload', async () => {
       const invalidPayload = { sub: mockUser.id }; // Missing email and username
       jwtService.verifyAsync.mockResolvedValue(invalidPayload);
 
-      await expect(service.validateToken(mockAccessToken)).rejects.toThrow(UnauthorizedException);
-      await expect(service.validateToken(mockAccessToken)).rejects.toThrow('Invalid token payload');
+      await expect(service.validateToken(mockAccessToken)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(service.validateToken(mockAccessToken)).rejects.toThrow(
+        'Invalid token payload',
+      );
     });
 
     it('should handle generic errors during validation', async () => {
       jwtService.verifyAsync.mockRejectedValue(new Error('Generic error'));
 
-      await expect(service.validateToken(mockAccessToken)).rejects.toThrow(UnauthorizedException);
-      await expect(service.validateToken(mockAccessToken)).rejects.toThrow('Token validation failed');
+      await expect(service.validateToken(mockAccessToken)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(service.validateToken(mockAccessToken)).rejects.toThrow(
+        'Token validation failed',
+      );
     });
   });
 
@@ -250,10 +274,18 @@ describe('JwtAuthService', () => {
       jwtService.verifyAsync.mockRejectedValue(expiredError);
 
       await expect(
-        service.refreshTokens(mockRefreshToken, mockUser.email, mockUser.username),
+        service.refreshTokens(
+          mockRefreshToken,
+          mockUser.email,
+          mockUser.username,
+        ),
       ).rejects.toThrow(UnauthorizedException);
       await expect(
-        service.refreshTokens(mockRefreshToken, mockUser.email, mockUser.username),
+        service.refreshTokens(
+          mockRefreshToken,
+          mockUser.email,
+          mockUser.username,
+        ),
       ).rejects.toThrow('Refresh token expired');
     });
 
@@ -263,10 +295,18 @@ describe('JwtAuthService', () => {
       jwtService.verifyAsync.mockRejectedValue(invalidError);
 
       await expect(
-        service.refreshTokens(mockRefreshToken, mockUser.email, mockUser.username),
+        service.refreshTokens(
+          mockRefreshToken,
+          mockUser.email,
+          mockUser.username,
+        ),
       ).rejects.toThrow(UnauthorizedException);
       await expect(
-        service.refreshTokens(mockRefreshToken, mockUser.email, mockUser.username),
+        service.refreshTokens(
+          mockRefreshToken,
+          mockUser.email,
+          mockUser.username,
+        ),
       ).rejects.toThrow('Invalid refresh token');
     });
 
@@ -275,10 +315,18 @@ describe('JwtAuthService', () => {
       jwtService.verifyAsync.mockResolvedValue(invalidPayload);
 
       await expect(
-        service.refreshTokens(mockRefreshToken, mockUser.email, mockUser.username),
+        service.refreshTokens(
+          mockRefreshToken,
+          mockUser.email,
+          mockUser.username,
+        ),
       ).rejects.toThrow(UnauthorizedException);
       await expect(
-        service.refreshTokens(mockRefreshToken, mockUser.email, mockUser.username),
+        service.refreshTokens(
+          mockRefreshToken,
+          mockUser.email,
+          mockUser.username,
+        ),
       ).rejects.toThrow('Invalid refresh token payload');
     });
 
@@ -286,10 +334,18 @@ describe('JwtAuthService', () => {
       jwtService.verifyAsync.mockRejectedValue(new Error('Generic error'));
 
       await expect(
-        service.refreshTokens(mockRefreshToken, mockUser.email, mockUser.username),
+        service.refreshTokens(
+          mockRefreshToken,
+          mockUser.email,
+          mockUser.username,
+        ),
       ).rejects.toThrow(UnauthorizedException);
       await expect(
-        service.refreshTokens(mockRefreshToken, mockUser.email, mockUser.username),
+        service.refreshTokens(
+          mockRefreshToken,
+          mockUser.email,
+          mockUser.username,
+        ),
       ).rejects.toThrow('Token refresh failed');
     });
   });
@@ -327,7 +383,11 @@ describe('JwtAuthService', () => {
         .mockResolvedValueOnce(mockAccessToken)
         .mockResolvedValueOnce(mockRefreshToken);
 
-      await service.generateTokens(mockUser.id, mockUser.email, mockUser.username);
+      await service.generateTokens(
+        mockUser.id,
+        mockUser.email,
+        mockUser.username,
+      );
 
       const accessTokenCall = jwtService.signAsync.mock.calls[0];
       const refreshTokenCall = jwtService.signAsync.mock.calls[1];
@@ -349,13 +409,23 @@ describe('JwtAuthService', () => {
         .mockResolvedValueOnce(mockAccessToken)
         .mockResolvedValueOnce(mockRefreshToken);
 
-      await service.generateTokens(mockUser.id, mockUser.email, mockUser.username);
-      await service.generateTokens(mockUser.id, mockUser.email, mockUser.username);
+      await service.generateTokens(
+        mockUser.id,
+        mockUser.email,
+        mockUser.username,
+      );
+      await service.generateTokens(
+        mockUser.id,
+        mockUser.email,
+        mockUser.username,
+      );
 
       const firstRefreshTokenCall = jwtService.signAsync.mock.calls[1];
       const secondRefreshTokenCall = jwtService.signAsync.mock.calls[3];
 
-      expect(firstRefreshTokenCall[0].tokenId).not.toEqual(secondRefreshTokenCall[0].tokenId);
+      expect(firstRefreshTokenCall[0].tokenId).not.toEqual(
+        secondRefreshTokenCall[0].tokenId,
+      );
     });
   });
 });

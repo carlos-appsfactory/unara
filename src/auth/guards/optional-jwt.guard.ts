@@ -10,7 +10,9 @@ export class OptionalJwtAuthGuard extends AuthGuard('jwt') {
    * @param context - The execution context
    * @returns boolean, Promise<boolean>, or Observable<boolean>
    */
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
+  canActivate(
+    context: ExecutionContext,
+  ): boolean | Promise<boolean> | Observable<boolean> {
     // Always allow the request to proceed
     // Authentication will be attempted but not required
     return super.canActivate(context);

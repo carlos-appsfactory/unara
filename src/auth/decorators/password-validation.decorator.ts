@@ -7,7 +7,9 @@ import {
 } from 'class-validator';
 
 @ValidatorConstraint({ name: 'isStrongPassword', async: false })
-export class IsStrongPasswordConstraint implements ValidatorConstraintInterface {
+export class IsStrongPasswordConstraint
+  implements ValidatorConstraintInterface
+{
   validate(password: string, args: ValidationArguments) {
     if (!password || typeof password !== 'string') {
       return false;
@@ -78,7 +80,7 @@ export class IsStrongPasswordConstraint implements ValidatorConstraintInterface 
 }
 
 export function IsStrongPassword(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       target: object.constructor,
       propertyName: propertyName,

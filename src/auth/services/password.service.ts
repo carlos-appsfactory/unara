@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -15,12 +19,18 @@ export class PasswordService {
       const hashedPassword = await bcrypt.hash(plainPassword, this.saltRounds);
       return hashedPassword;
     } catch (error) {
-      this.logger.error(`Error hashing password: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error hashing password: ${error.message}`,
+        error.stack,
+      );
       throw new InternalServerErrorException('Failed to hash password');
     }
   }
 
-  async validatePassword(plainPassword: string, hash: string): Promise<boolean> {
+  async validatePassword(
+    plainPassword: string,
+    hash: string,
+  ): Promise<boolean> {
     try {
       if (!plainPassword || !hash) {
         return false;
@@ -29,7 +39,10 @@ export class PasswordService {
       const isValid = await bcrypt.compare(plainPassword, hash);
       return isValid;
     } catch (error) {
-      this.logger.error(`Error validating password: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error validating password: ${error.message}`,
+        error.stack,
+      );
       throw new InternalServerErrorException('Failed to validate password');
     }
   }

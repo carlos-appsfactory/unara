@@ -2,7 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
-import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import {
+  PostgreSqlContainer,
+  StartedPostgreSqlContainer,
+} from '@testcontainers/postgresql';
 import { User } from '../users/entities/user.entity';
 
 describe('Database Connection Integration', () => {
@@ -63,8 +66,12 @@ describe('Database Connection Integration', () => {
     it('should have correct PostgreSQL configuration', () => {
       expect(dataSource.options.type).toBe('postgres');
       expect(dataSource.options.synchronize).toBe(true);
-      expect((dataSource.options as any).host).toBe(postgresContainer.getHost());
-      expect((dataSource.options as any).port).toBe(postgresContainer.getMappedPort(5432));
+      expect((dataSource.options as any).host).toBe(
+        postgresContainer.getHost(),
+      );
+      expect((dataSource.options as any).port).toBe(
+        postgresContainer.getMappedPort(5432),
+      );
     });
 
     it('should load entities correctly', () => {
@@ -78,9 +85,9 @@ describe('Database Connection Integration', () => {
   describe('Entity Recognition and Schema', () => {
     it('should recognize User entity with all authentication columns', () => {
       const userMetadata = dataSource.getMetadata(User);
-      
-      const columnNames = userMetadata.columns.map(col => col.propertyName);
-      
+
+      const columnNames = userMetadata.columns.map((col) => col.propertyName);
+
       // Required authentication fields
       expect(columnNames).toContain('id');
       expect(columnNames).toContain('email');
@@ -96,7 +103,7 @@ describe('Database Connection Integration', () => {
 
     it('should have correct PostgreSQL column types and constraints', () => {
       const userMetadata = dataSource.getMetadata(User);
-      
+
       const idColumn = userMetadata.findColumnWithPropertyName('id');
       expect(idColumn?.type).toBe('uuid');
       expect(idColumn?.isPrimary).toBe(true);
@@ -106,23 +113,28 @@ describe('Database Connection Integration', () => {
       expect(emailColumn?.isUnique).toBe(true);
       expect(emailColumn?.length).toBe('255');
 
-      const usernameColumn = userMetadata.findColumnWithPropertyName('username');
+      const usernameColumn =
+        userMetadata.findColumnWithPropertyName('username');
       expect(usernameColumn?.isUnique).toBe(true);
       expect(usernameColumn?.length).toBe('255');
 
-      const emailVerifiedColumn = userMetadata.findColumnWithPropertyName('email_verified');
+      const emailVerifiedColumn =
+        userMetadata.findColumnWithPropertyName('email_verified');
       expect(emailVerifiedColumn?.type).toBe('boolean');
       expect(emailVerifiedColumn?.default).toBe(false);
 
-      const lastLoginColumn = userMetadata.findColumnWithPropertyName('last_login');
+      const lastLoginColumn =
+        userMetadata.findColumnWithPropertyName('last_login');
       expect(lastLoginColumn?.type).toBe('timestamp');
       expect(lastLoginColumn?.isNullable).toBe(true);
 
-      const createdAtColumn = userMetadata.findColumnWithPropertyName('createdAt');
+      const createdAtColumn =
+        userMetadata.findColumnWithPropertyName('createdAt');
       expect(createdAtColumn?.type).toBe('timestamp');
       expect(createdAtColumn?.isCreateDate).toBe(true);
 
-      const updatedAtColumn = userMetadata.findColumnWithPropertyName('updatedAt');
+      const updatedAtColumn =
+        userMetadata.findColumnWithPropertyName('updatedAt');
       expect(updatedAtColumn?.type).toBe('timestamp');
       expect(updatedAtColumn?.isUpdateDate).toBe(true);
     });
@@ -139,7 +151,7 @@ describe('Database Connection Integration', () => {
     it('should perform complete CRUD operations successfully', async () => {
       const userRepository = dataSource.getRepository(User);
       await userRepository.clear();
-      
+
       // CREATE
       const userData = {
         email: 'crud@test.com',
@@ -153,13 +165,15 @@ describe('Database Connection Integration', () => {
       const savedUser = await userRepository.save(user);
 
       expect(savedUser.id).toBeDefined();
-      expect(savedUser.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+      expect(savedUser.id).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+      );
       expect(savedUser.email).toBe(userData.email);
       expect(savedUser.email_verified).toBe(false);
 
       // READ
       const foundUser = await userRepository.findOne({
-        where: { id: savedUser.id }
+        where: { id: savedUser.id },
       });
       expect(foundUser).toBeDefined();
       expect(foundUser?.email).toBe(userData.email);
@@ -169,17 +183,19 @@ describe('Database Connection Integration', () => {
       foundUser!.fullname = 'Updated CRUD Test User';
       foundUser!.email_verified = true;
       foundUser!.last_login = new Date();
-      
+
       const updatedUser = await userRepository.save(foundUser!);
       expect(updatedUser.fullname).toBe('Updated CRUD Test User');
       expect(updatedUser.email_verified).toBe(true);
       expect(updatedUser.last_login).toBeDefined();
-      expect(updatedUser.updatedAt.getTime()).toBeGreaterThan(savedUser.updatedAt.getTime());
+      expect(updatedUser.updatedAt.getTime()).toBeGreaterThan(
+        savedUser.updatedAt.getTime(),
+      );
 
       // DELETE
       await userRepository.remove(updatedUser);
       const deletedUser = await userRepository.findOne({
-        where: { id: savedUser.id }
+        where: { id: savedUser.id },
       });
       expect(deletedUser).toBeNull();
     });
@@ -189,20 +205,20 @@ describe('Database Connection Integration', () => {
     it('should integrate with ConfigService', () => {
       const configService = app.get<ConfigService>(ConfigService);
       expect(configService).toBeDefined();
-      
+
       // Test ConfigService functionality
       expect(configService.get('NODE_ENV', 'development')).toBeDefined();
     });
 
     it('should handle environment-based database configuration', () => {
       const configService = app.get<ConfigService>(ConfigService);
-      
+
       // Test database configuration retrieval
       const dbHost = configService.get('DB_HOST', 'localhost');
       const dbPort = configService.get('DB_PORT', 5432);
       const dbName = configService.get('DB_NAME', 'unara_db');
       const dbUser = configService.get('DB_USERNAME', 'postgres');
-      
+
       expect(dbHost).toBeDefined();
       expect(dbPort).toBeDefined();
       expect(dbName).toBeDefined();
@@ -227,7 +243,9 @@ describe('Database Connection Integration', () => {
       });
 
       expect(testDataSource.options.migrations).toBeDefined();
-      expect(testDataSource.options.migrationsTableName).toBe('typeorm_migrations');
+      expect(testDataSource.options.migrationsTableName).toBe(
+        'typeorm_migrations',
+      );
       expect(testDataSource.options.synchronize).toBe(false);
       expect(testDataSource.options.entities).toContain(User);
     });
@@ -235,8 +253,8 @@ describe('Database Connection Integration', () => {
     it('should handle entity auto-loading configuration', () => {
       const entities = dataSource.entityMetadatas;
       expect(entities.length).toBeGreaterThan(0);
-      
-      const userEntity = entities.find(entity => entity.target === User);
+
+      const userEntity = entities.find((entity) => entity.target === User);
       expect(userEntity).toBeDefined();
       expect(userEntity?.tableName).toBe('user');
       expect(userEntity?.columns.length).toBe(10); // All User fields
@@ -268,7 +286,9 @@ describe('Database Connection Integration', () => {
         fullname: 'User 2',
       });
 
-      await expect(userRepository.save(user2)).rejects.toThrow(/duplicate key value violates unique constraint/);
+      await expect(userRepository.save(user2)).rejects.toThrow(
+        /duplicate key value violates unique constraint/,
+      );
     });
 
     it('should handle PostgreSQL-specific data types correctly', async () => {
@@ -284,12 +304,14 @@ describe('Database Connection Integration', () => {
       const savedUser = await userRepository.save(user);
 
       // UUID should be properly generated
-      expect(savedUser.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
-      
+      expect(savedUser.id).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+      );
+
       // Boolean should be handled correctly
       expect(savedUser.email_verified).toBe(true);
       expect(typeof savedUser.email_verified).toBe('boolean');
-      
+
       // Timestamp should be handled correctly
       expect(savedUser.last_login).toBeInstanceOf(Date);
       expect(savedUser.createdAt).toBeInstanceOf(Date);
@@ -313,7 +335,9 @@ describe('Database Connection Integration', () => {
 
       // Test indexed queries performance
       const start = Date.now();
-      const user = await userRepository.findOne({ where: { email: 'perf25@test.com' } });
+      const user = await userRepository.findOne({
+        where: { email: 'perf25@test.com' },
+      });
       const duration = Date.now() - start;
 
       expect(user).toBeDefined();

@@ -1,5 +1,8 @@
 import { DataSource } from 'typeorm';
-import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import {
+  PostgreSqlContainer,
+  StartedPostgreSqlContainer,
+} from '@testcontainers/postgresql';
 import { CreateUsersTable1703000001000 } from './1703000001000-CreateUsersTable';
 
 describe('Migration Rollback Tests', () => {
@@ -64,7 +67,7 @@ describe('Migration Rollback Tests', () => {
         const table = await queryRunner.getTable('user');
         expect(table).toBeDefined();
 
-        const columnNames = table!.columns.map(col => col.name);
+        const columnNames = table!.columns.map((col) => col.name);
         expect(columnNames).toContain('id');
         expect(columnNames).toContain('email');
         expect(columnNames).toContain('username');
@@ -75,7 +78,6 @@ describe('Migration Rollback Tests', () => {
         expect(columnNames).toContain('last_login');
         expect(columnNames).toContain('created_at');
         expect(columnNames).toContain('updated_at');
-
       } finally {
         await queryRunner.release();
       }
@@ -87,7 +89,7 @@ describe('Migration Rollback Tests', () => {
       try {
         // First run up migration
         await migration.up(queryRunner);
-        
+
         // Verify table exists
         let tableExists = await queryRunner.hasTable('user');
         expect(tableExists).toBe(true);
@@ -98,7 +100,6 @@ describe('Migration Rollback Tests', () => {
         // Verify table was dropped
         tableExists = await queryRunner.hasTable('user');
         expect(tableExists).toBe(false);
-
       } finally {
         await queryRunner.release();
       }
@@ -126,20 +127,20 @@ describe('Migration Rollback Tests', () => {
 
     it('should create columns with correct PostgreSQL types and constraints', async () => {
       const queryRunner = dataSource.createQueryRunner();
-      
+
       try {
         const table = await queryRunner.getTable('user');
         const columns = table!.columns;
 
         // Check ID column (UUID with PostgreSQL-specific generation)
-        const idColumn = columns.find(col => col.name === 'id');
+        const idColumn = columns.find((col) => col.name === 'id');
         expect(idColumn).toBeDefined();
         expect(idColumn!.isPrimary).toBe(true);
         expect(idColumn!.type).toBe('uuid');
         expect(idColumn!.default).toBe('gen_random_uuid()');
 
         // Check email column with unique constraint
-        const emailColumn = columns.find(col => col.name === 'email');
+        const emailColumn = columns.find((col) => col.name === 'email');
         expect(emailColumn).toBeDefined();
         expect(emailColumn!.isUnique).toBe(true);
         expect(emailColumn!.isNullable).toBe(false);
@@ -147,44 +148,53 @@ describe('Migration Rollback Tests', () => {
         expect(emailColumn!.type).toBe('varchar');
 
         // Check username column with unique constraint
-        const usernameColumn = columns.find(col => col.name === 'username');
+        const usernameColumn = columns.find((col) => col.name === 'username');
         expect(usernameColumn).toBeDefined();
         expect(usernameColumn!.isUnique).toBe(true);
         expect(usernameColumn!.isNullable).toBe(false);
         expect(usernameColumn!.length).toBe('255');
 
         // Check password_hash column
-        const passwordColumn = columns.find(col => col.name === 'password_hash');
+        const passwordColumn = columns.find(
+          (col) => col.name === 'password_hash',
+        );
         expect(passwordColumn).toBeDefined();
         expect(passwordColumn!.isNullable).toBe(false);
         expect(passwordColumn!.type).toBe('text');
 
         // Check email_verified column with default
-        const emailVerifiedColumn = columns.find(col => col.name === 'email_verified');
+        const emailVerifiedColumn = columns.find(
+          (col) => col.name === 'email_verified',
+        );
         expect(emailVerifiedColumn).toBeDefined();
         expect(emailVerifiedColumn!.type).toBe('boolean');
         expect(emailVerifiedColumn!.default).toBe(false);
         expect(emailVerifiedColumn!.isNullable).toBe(false);
 
         // Check last_login column (nullable timestamp)
-        const lastLoginColumn = columns.find(col => col.name === 'last_login');
+        const lastLoginColumn = columns.find(
+          (col) => col.name === 'last_login',
+        );
         expect(lastLoginColumn).toBeDefined();
         expect(lastLoginColumn!.type).toBe('timestamp');
         expect(lastLoginColumn!.isNullable).toBe(true);
 
         // Check timestamp columns with defaults
-        const createdAtColumn = columns.find(col => col.name === 'created_at');
+        const createdAtColumn = columns.find(
+          (col) => col.name === 'created_at',
+        );
         expect(createdAtColumn).toBeDefined();
         expect(createdAtColumn!.type).toBe('timestamp');
         expect(createdAtColumn!.default).toBe('CURRENT_TIMESTAMP');
         expect(createdAtColumn!.isNullable).toBe(false);
 
-        const updatedAtColumn = columns.find(col => col.name === 'updated_at');
+        const updatedAtColumn = columns.find(
+          (col) => col.name === 'updated_at',
+        );
         expect(updatedAtColumn).toBeDefined();
         expect(updatedAtColumn!.type).toBe('timestamp');
         expect(updatedAtColumn!.default).toBe('CURRENT_TIMESTAMP');
         expect(updatedAtColumn!.isNullable).toBe(false);
-
       } finally {
         await queryRunner.release();
       }
@@ -212,29 +222,34 @@ describe('Migration Rollback Tests', () => {
 
     it('should create PostgreSQL indexes for email and username', async () => {
       const queryRunner = dataSource.createQueryRunner();
-      
+
       try {
         const table = await queryRunner.getTable('user');
         const indices = table!.indices;
 
         // Check email index
-        const emailIndex = indices.find(idx => idx.name === 'IDX_USER_EMAIL');
+        const emailIndex = indices.find((idx) => idx.name === 'IDX_USER_EMAIL');
         expect(emailIndex).toBeDefined();
         expect(emailIndex!.columnNames).toContain('email');
 
         // Check username index
-        const usernameIndex = indices.find(idx => idx.name === 'IDX_USER_USERNAME');
+        const usernameIndex = indices.find(
+          (idx) => idx.name === 'IDX_USER_USERNAME',
+        );
         expect(usernameIndex).toBeDefined();
         expect(usernameIndex!.columnNames).toContain('username');
 
         // Verify unique constraints (which create implicit indexes)
         const constraints = table!.uniques;
-        const emailConstraint = constraints.find(c => c.columnNames.includes('email'));
-        const usernameConstraint = constraints.find(c => c.columnNames.includes('username'));
-        
+        const emailConstraint = constraints.find((c) =>
+          c.columnNames.includes('email'),
+        );
+        const usernameConstraint = constraints.find((c) =>
+          c.columnNames.includes('username'),
+        );
+
         expect(emailConstraint).toBeDefined();
         expect(usernameConstraint).toBeDefined();
-
       } finally {
         await queryRunner.release();
       }
@@ -245,7 +260,7 @@ describe('Migration Rollback Tests', () => {
 
       try {
         // Verify indexes exist after up migration
-        let table = await queryRunner.getTable('user');
+        const table = await queryRunner.getTable('user');
         expect(table!.indices.length).toBeGreaterThan(0);
 
         // Run down migration
@@ -254,7 +269,6 @@ describe('Migration Rollback Tests', () => {
         // Verify table doesn't exist (so indexes are also gone)
         const tableExists = await queryRunner.hasTable('user');
         expect(tableExists).toBe(false);
-
       } finally {
         await queryRunner.release();
       }
@@ -278,13 +292,17 @@ describe('Migration Rollback Tests', () => {
         `);
 
         // Verify data exists
-        const result = await queryRunner.query('SELECT COUNT(*) as count FROM "user"');
+        const result = await queryRunner.query(
+          'SELECT COUNT(*) as count FROM "user"',
+        );
         expect(parseInt(result[0].count)).toBe(2);
 
         // Verify UUID generation worked
         const users = await queryRunner.query('SELECT id FROM "user"');
         users.forEach((user: any) => {
-          expect(user.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+          expect(user.id).toMatch(
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+          );
         });
 
         // Run migration down (should drop table and all data)
@@ -298,9 +316,10 @@ describe('Migration Rollback Tests', () => {
         await migration.up(queryRunner);
 
         // Verify table is clean
-        const newResult = await queryRunner.query('SELECT COUNT(*) as count FROM "user"');
+        const newResult = await queryRunner.query(
+          'SELECT COUNT(*) as count FROM "user"',
+        );
         expect(parseInt(newResult[0].count)).toBe(0);
-
       } finally {
         await queryRunner.release();
       }
@@ -318,12 +337,13 @@ describe('Migration Rollback Tests', () => {
         expect(firstTable).toBeDefined();
 
         // Second migration up should throw error (table already exists)
-        await expect(migration.up(queryRunner)).rejects.toThrow(/already exists/);
+        await expect(migration.up(queryRunner)).rejects.toThrow(
+          /already exists/,
+        );
 
         // Table should still exist and be accessible
         const tableAfterSecond = await queryRunner.getTable('user');
         expect(tableAfterSecond).toBeDefined();
-
       } finally {
         await queryRunner.release();
       }
@@ -340,7 +360,6 @@ describe('Migration Rollback Tests', () => {
         // Try to run down migration on non-existent table
         // This should succeed (DROP TABLE IF EXISTS should handle it)
         await expect(migration.down(queryRunner)).resolves.not.toThrow();
-
       } finally {
         await queryRunner.release();
       }
@@ -376,7 +395,7 @@ describe('Migration Rollback Tests', () => {
             SELECT 1 FROM pg_extension WHERE extname = 'uuid-ossp'
           ) as extension_exists
         `);
-        
+
         expect(extensionResult[0].extension_exists).toBe(true);
 
         // Test UUID generation by inserting a record
@@ -387,8 +406,9 @@ describe('Migration Rollback Tests', () => {
 
         const users = await queryRunner.query('SELECT id FROM "user"');
         expect(users).toHaveLength(1);
-        expect(users[0].id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
-
+        expect(users[0].id).toMatch(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+        );
       } finally {
         await queryRunner.release();
       }
@@ -405,17 +425,20 @@ describe('Migration Rollback Tests', () => {
         `);
 
         // Try to insert user with duplicate email (should fail)
-        await expect(queryRunner.query(`
+        await expect(
+          queryRunner.query(`
           INSERT INTO "user" (email, username, password_hash, fullname)
           VALUES ('constraint@test.com', 'anotheruser', 'hash456', 'Another User')
-        `)).rejects.toThrow(/duplicate key value violates unique constraint/);
+        `),
+        ).rejects.toThrow(/duplicate key value violates unique constraint/);
 
         // Try to insert user with duplicate username (should fail)
-        await expect(queryRunner.query(`
+        await expect(
+          queryRunner.query(`
           INSERT INTO "user" (email, username, password_hash, fullname)
           VALUES ('another@test.com', 'constraintuser', 'hash456', 'Another User')
-        `)).rejects.toThrow(/duplicate key value violates unique constraint/);
-
+        `),
+        ).rejects.toThrow(/duplicate key value violates unique constraint/);
       } finally {
         await queryRunner.release();
       }

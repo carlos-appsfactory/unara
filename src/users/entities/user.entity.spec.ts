@@ -1,7 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import {
+  PostgreSqlContainer,
+  StartedPostgreSqlContainer,
+} from '@testcontainers/postgresql';
 import { User } from './user.entity';
 
 describe('User Entity', () => {
@@ -66,7 +69,9 @@ describe('User Entity', () => {
       const savedUser = await repository.save(user);
 
       expect(savedUser.id).toBeDefined();
-      expect(savedUser.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i); // UUID format
+      expect(savedUser.id).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+      ); // UUID format
       expect(savedUser.email).toBe(userData.email);
       expect(savedUser.username).toBe(userData.username);
       expect(savedUser.password_hash).toBe(userData.password_hash);
@@ -194,9 +199,10 @@ describe('User Entity', () => {
       expect(savedUser1.id).toBeDefined();
       expect(savedUser2.id).toBeDefined();
       expect(savedUser1.id).not.toBe(savedUser2.id); // Different UUIDs
-      
+
       // Verify UUID format
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       expect(savedUser1.id).toMatch(uuidRegex);
       expect(savedUser2.id).toMatch(uuidRegex);
     });
@@ -222,7 +228,9 @@ describe('User Entity', () => {
       expect(updatedUser.updatedAt).toBeDefined();
       expect(updatedUser.createdAt).toBeInstanceOf(Date);
       expect(updatedUser.updatedAt).toBeInstanceOf(Date);
-      expect(updatedUser.updatedAt.getTime()).toBeGreaterThan(beforeUpdate.getTime());
+      expect(updatedUser.updatedAt.getTime()).toBeGreaterThan(
+        beforeUpdate.getTime(),
+      );
     });
 
     it('should handle null values correctly for optional fields', async () => {
@@ -236,7 +244,7 @@ describe('User Entity', () => {
       });
 
       const savedUser = await repository.save(user);
-      
+
       expect(savedUser.last_login).toBeNull();
       expect(savedUser.profile_picture).toBeNull();
       expect(savedUser.email_verified).toBe(false); // Default value, not null
@@ -264,7 +272,9 @@ describe('User Entity', () => {
 
     it('should efficiently find user by email (indexed)', async () => {
       const start = Date.now();
-      const user = await repository.findOne({ where: { email: 'user5@example.com' } });
+      const user = await repository.findOne({
+        where: { email: 'user5@example.com' },
+      });
       const duration = Date.now() - start;
 
       expect(user).toBeDefined();

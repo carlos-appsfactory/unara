@@ -23,7 +23,10 @@ describe('CurrentUser Decorator', () => {
     } as ExecutionContext;
   });
 
-  const decoratorCallback = (data: keyof JwtPayload | undefined, ctx: ExecutionContext): JwtPayload | any => {
+  const decoratorCallback = (
+    data: keyof JwtPayload | undefined,
+    ctx: ExecutionContext,
+  ): JwtPayload | any => {
     const request = ctx.switchToHttp().getRequest();
     const user: JwtPayload = request.user;
 
@@ -55,7 +58,10 @@ describe('CurrentUser Decorator', () => {
   });
 
   it('should return undefined when requested property does not exist', () => {
-    const result = decoratorCallback('nonexistent' as keyof JwtPayload, mockExecutionContext);
+    const result = decoratorCallback(
+      'nonexistent' as keyof JwtPayload,
+      mockExecutionContext,
+    );
     expect(result).toBeUndefined();
   });
 

@@ -39,11 +39,14 @@ export class RefreshTokenService {
       });
 
       const savedToken = await this.refreshTokenRepository.save(refreshToken);
-      
+
       this.logger.log(`Stored refresh token for user: ${userId}`);
       return savedToken;
     } catch (error) {
-      this.logger.error(`Error storing refresh token for user ${userId}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error storing refresh token for user ${userId}: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -56,7 +59,7 @@ export class RefreshTokenService {
   async findRefreshToken(tokenId: string): Promise<RefreshToken | null> {
     try {
       const tokenHash = this.hashToken(tokenId);
-      
+
       const token = await this.refreshTokenRepository.findOne({
         where: { tokenHash },
         relations: ['user'],
@@ -64,7 +67,10 @@ export class RefreshTokenService {
 
       return token;
     } catch (error) {
-      this.logger.error(`Error finding refresh token: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error finding refresh token: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -77,7 +83,7 @@ export class RefreshTokenService {
   async validateRefreshToken(tokenId: string): Promise<RefreshToken | null> {
     try {
       const tokenHash = this.hashToken(tokenId);
-      
+
       const token = await this.refreshTokenRepository.findOne({
         where: { tokenHash },
         relations: ['user'],
@@ -91,13 +97,18 @@ export class RefreshTokenService {
       if (token.expiresAt < new Date()) {
         // Delete expired token
         await this.refreshTokenRepository.remove(token);
-        this.logger.warn(`Removed expired refresh token for user: ${token.userId}`);
+        this.logger.warn(
+          `Removed expired refresh token for user: ${token.userId}`,
+        );
         return null;
       }
 
       return token;
     } catch (error) {
-      this.logger.error(`Error validating refresh token: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error validating refresh token: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -110,17 +121,22 @@ export class RefreshTokenService {
   async revokeRefreshToken(tokenId: string): Promise<boolean> {
     try {
       const tokenHash = this.hashToken(tokenId);
-      
+
       const result = await this.refreshTokenRepository.delete({ tokenHash });
-      
+
       const revoked = !!(result.affected && result.affected > 0);
       if (revoked) {
-        this.logger.log(`Revoked refresh token: ${tokenHash.substring(0, 10)}...`);
+        this.logger.log(
+          `Revoked refresh token: ${tokenHash.substring(0, 10)}...`,
+        );
       }
-      
+
       return revoked;
     } catch (error) {
-      this.logger.error(`Error revoking refresh token: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error revoking refresh token: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -133,15 +149,20 @@ export class RefreshTokenService {
   async revokeUserRefreshTokens(userId: string): Promise<number> {
     try {
       const result = await this.refreshTokenRepository.delete({ userId });
-      
+
       const revokedCount = result.affected || 0;
       if (revokedCount > 0) {
-        this.logger.log(`Revoked ${revokedCount} refresh tokens for user: ${userId}`);
+        this.logger.log(
+          `Revoked ${revokedCount} refresh tokens for user: ${userId}`,
+        );
       }
-      
+
       return revokedCount;
     } catch (error) {
-      this.logger.error(`Error revoking user refresh tokens for ${userId}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error revoking user refresh tokens for ${userId}: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -163,7 +184,10 @@ export class RefreshTokenService {
 
       return cleanedCount;
     } catch (error) {
-      this.logger.error(`Error cleaning up expired tokens: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error cleaning up expired tokens: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }

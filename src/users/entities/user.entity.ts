@@ -29,6 +29,12 @@ export class User {
   @Column({ type: 'boolean', default: false })
   email_verified: boolean;
 
+  @Column({ type: 'varchar', length: 255, nullable: true, unique: true })
+  email_verification_token?: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  email_verification_expires_at?: Date;
+
   @Column({ type: 'timestamp', nullable: true })
   last_login?: Date;
 
