@@ -200,6 +200,86 @@ Advanced token management with automated maintenance and security features:
 - *`src/auth/interfaces/jwt-payload.interface.ts` - Enhanced JWT payload with token ID (jti) for blacklisting*
 - *`src/app.module.ts` - Schedule module configuration for automated maintenance*
 
+## OAuth Social Authentication System
+
+A comprehensive OAuth 2.0 social authentication system supporting multiple providers with secure user linking:
+
+- **Multi-Provider Support**: Google, Facebook, Microsoft, and Apple OAuth integration
+- **Passport.js Integration**: Custom strategies for each OAuth provider with profile extraction
+- **User Account Linking**: Automatic account linking by email with new user registration
+- **JWT Token Integration**: Seamless JWT token generation after OAuth authentication
+- **Provider Management**: Multiple OAuth accounts per user with unlinking capabilities
+
+*Files:*
+- *`src/auth/strategies/google.strategy.ts` - Google OAuth2 strategy with profile extraction and validation*
+- *`src/auth/strategies/facebook.strategy.ts` - Facebook OAuth strategy with profile field configuration*
+- *`src/auth/strategies/microsoft.strategy.ts` - Microsoft OAuth strategy with tenant support*
+- *`src/auth/strategies/apple.strategy.ts` - Apple Sign-In strategy with JWT token validation*
+
+## OAuth Database Integration
+
+Complete OAuth provider management with secure database relationships:
+
+- **OAuth Provider Entity**: Database persistence for OAuth account connections with user relationships
+- **Database Migration**: Proper table structure with foreign key constraints and indexing
+- **User Linking Logic**: Email-based account linking with duplicate prevention
+- **Username Generation**: Intelligent username creation from OAuth profile data
+
+*Files:*
+- *`src/auth/entities/oauth-provider.entity.ts` - OAuthProvider entity with user relationships and OAuth data storage*
+- *`src/database/migrations/1736543021000-CreateOAuthProvidersTable.ts` - Database migration for OAuth providers table*
+- *`src/auth/services/oauth.service.ts` - OAuth authentication service with user linking and registration logic*
+
+## OAuth API Endpoints
+
+RESTful OAuth authentication endpoints for all supported providers:
+
+- **OAuth Initiation**: GET endpoints for OAuth flow initiation with provider redirects
+- **OAuth Callbacks**: Callback handling for Google, Facebook, Microsoft with user authentication
+- **Apple Sign-In**: POST endpoint for server-side Apple ID token validation
+- **Provider Management**: OAuth account linking and unlinking functionality
+- **Error Handling**: Comprehensive error responses with security-conscious messaging
+
+*Files:*
+- *`src/auth/controllers/auth.controller.ts` - OAuth endpoints added with comprehensive error handling*
+- *`src/auth/guards/google-auth.guard.ts` - Google OAuth authentication guard*
+- *`src/auth/guards/facebook-auth.guard.ts` - Facebook OAuth authentication guard*
+- *`src/auth/guards/microsoft-auth.guard.ts` - Microsoft OAuth authentication guard*
+- *`src/auth/guards/apple-auth.guard.ts` - Apple Sign-In authentication guard*
+- *`src/auth/dto/oauth-login-response.dto.ts` - OAuth authentication response format*
+
+## OAuth Security & Testing
+
+Comprehensive security testing and validation for OAuth authentication:
+
+- **Security Testing**: 16 security tests covering input validation, JWT validation, DoS protection, and configuration security
+- **Strategy Testing**: 27 unit tests for all OAuth strategy validation logic
+- **Integration Testing**: 13 API endpoint tests covering full authentication flows
+- **User Flow Testing**: 15 tests for registration, linking, and provider management
+- **Performance Testing**: Multi-request handling and memory efficiency validation
+
+*Files:*
+- *`src/auth/strategies/google.strategy.spec.ts` - Google strategy unit tests with profile validation*
+- *`src/auth/strategies/facebook.strategy.spec.ts` - Facebook strategy tests with error handling*
+- *`src/auth/strategies/microsoft.strategy.spec.ts` - Microsoft strategy tests with multi-email support*
+- *`src/auth/strategies/apple.strategy.spec.ts` - Apple strategy tests with JWT validation*
+- *`src/auth/guards/oauth-security.spec.ts` - Comprehensive OAuth security testing suite*
+- *`src/auth/controllers/auth.controller.oauth.integration.spec.ts` - OAuth API integration tests*
+- *`src/auth/services/oauth-user-flows.spec.ts` - OAuth user registration and linking flow tests*
+
+## OAuth Configuration & Environment
+
+Secure OAuth provider configuration with environment-based setup:
+
+- **Provider Credentials**: Environment-based client ID and secret configuration for all providers
+- **Redirect URIs**: Configurable OAuth callback URLs for development and production
+- **Apple Configuration**: Specialized Apple Sign-In configuration with team ID and key management
+- **Security Practices**: No sensitive tokens stored in database, proper secret management
+
+*Files:*
+- *`.env.template` - OAuth provider configuration variables added*
+- *`package.json` - OAuth dependencies added: passport-google-oauth20, passport-facebook, passport-microsoft, @azure/msal-node*
+
 ## Current Status
 
-The authentication system is fully operational with complete user registration, email verification, JWT token-based authentication, and comprehensive middleware protection. All components are thoroughly tested with route protection, token blacklisting, and automated cleanup systems. The system includes protected API endpoints, real-time token revocation, and scheduled maintenance for production deployment. Authentication middleware successfully protects all routes with proper error handling and comprehensive security features.
+The authentication system is fully operational with complete user registration, email verification, JWT token-based authentication, OAuth social authentication, and comprehensive middleware protection. All components are thoroughly tested with route protection, token blacklisting, automated cleanup systems, and extensive OAuth security validation. The system includes protected API endpoints, real-time token revocation, scheduled maintenance, and multi-provider OAuth authentication with 57 passing tests covering all authentication scenarios. OAuth integration supports Google, Facebook, Microsoft, and Apple with secure user account linking and comprehensive security testing.
