@@ -14,7 +14,7 @@ export const AppDataSource = new DataSource({
   password: configService.get('DB_PASSWORD', 'password'),
   database: configService.get('DB_NAME', 'unara_db'),
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-  migrations: [__dirname + '/migrations/*{.ts,.js}'],
+  migrations: [__dirname + '/migrations/*!(*.spec){.ts,.js}'],
   migrationsTableName: 'typeorm_migrations',
   synchronize: false,
   logging: configService.get('NODE_ENV') === 'development',
