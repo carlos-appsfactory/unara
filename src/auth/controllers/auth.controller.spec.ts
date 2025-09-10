@@ -1,11 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConflictException } from '@nestjs/common';
+import {
+  ConflictException,
+  UnauthorizedException,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService, RegistrationResponse } from '../services/auth.service';
 import { EmailVerificationService } from '../services/email-verification.service';
 import { CreateUserDto } from '../../users/dto/create-user.dto';
 import { UserResponseDto } from '../dto/user-response.dto';
 import { VerifyEmailDto, ResendVerificationDto } from '../dto/verify-email.dto';
+import { LoginUserDto } from '../dto/login-user.dto';
+import { LoginResponseDto } from '../dto/login-response.dto';
 import { TokenPair } from '../interfaces/jwt-payload.interface';
 import { User } from '../../users/entities/user.entity';
 
@@ -34,6 +41,11 @@ describe('AuthController', () => {
     verificationToken: 'verification-token-123',
   };
 
+  const mockLoginResponse: LoginResponseDto = {
+    user: mockUserResponse,
+    tokens: mockTokens,
+  };
+
   const mockCreateUserDto: CreateUserDto = {
     email: 'test@example.com',
     username: 'testuser',
@@ -57,6 +69,7 @@ describe('AuthController', () => {
   beforeEach(async () => {
     const mockAuthService = {
       register: jest.fn(),
+      login: jest.fn(),
     };
 
     const mockEmailVerificationService = {
@@ -340,6 +353,290 @@ describe('AuthController', () => {
         'If this email is registered, a verification email will be sent',
       );
       expect(result.user).toBeUndefined(); // Don't expose user details
+    });
+  });
+
+  describe('login', () => {
+    const mockRequest = {
+      headers: {},
+      socket: { remoteAddress: '192.168.1.1' },
+    } as any;
+
+    it('should successfully login user with email', async () => {
+      const loginDto = new LoginUserDto();
+      loginDto.email = 'test@example.com';
+      loginDto.password = 'password123';
+
+      authService.login.mockResolvedValue(mockLoginResponse);
+
+      const result = await controller.login(loginDto, mockRequest);
+
+      expect(authService.login).toHaveBeenCalledWith(loginDto, '192.168.1.1');
+      expect(result).toEqual(mockLoginResponse);
+      expect(result.user.id).toBe(mockUserResponse.id);
+      expect(result.tokens.accessToken).toBe(mockTokens.accessToken);
+    });
+
+    it('should successfully login user with username', async () => {
+      const loginDto = new LoginUserDto();
+      loginDto.username = 'testuser';
+      loginDto.password = 'password123';
+
+      authService.login.mockResolvedValue(mockLoginResponse);
+
+      const result = await controller.login(loginDto, mockRequest);
+
+      expect(authService.login).toHaveBeenCalledWith(loginDto, '192.168.1.1');
+      expect(result).toEqual(mockLoginResponse);
+      expect(result.user.username).toBe(mockUserResponse.username);
+    });
+
+    it('should throw UnauthorizedException for invalid credentials', async () => {
+      const loginDto = new LoginUserDto();
+      loginDto.email = 'test@example.com';
+      loginDto.password = 'wrongpassword';
+
+      authService.login.mockRejectedValue(
+        new UnauthorizedException('Invalid credentials'),
+      );
+
+      await expect(controller.login(loginDto, mockRequest)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(authService.login).toHaveBeenCalledWith(loginDto, '192.168.1.1');
+    });
+
+    it('should throw UnauthorizedException when no identifier provided', async () => {
+      const loginDto = new LoginUserDto();
+      loginDto.password = 'password123';
+
+      authService.login.mockRejectedValue(
+        new UnauthorizedException('Email or username is required'),
+      );
+
+      await expect(controller.login(loginDto, mockRequest)).rejects.toThrow(
+        UnauthorizedException,
+      );
+    });
+
+    it('should handle service errors gracefully', async () => {
+      const loginDto = new LoginUserDto();
+      loginDto.email = 'test@example.com';
+      loginDto.password = 'password123';
+
+      const error = new Error('Database connection failed');
+      authService.login.mockRejectedValue(error);
+
+      await expect(controller.login(loginDto, mockRequest)).rejects.toThrow(
+        error,
+      );
+      expect(authService.login).toHaveBeenCalledWith(loginDto, '192.168.1.1');
+    });
+
+    it('should log successful login attempts', async () => {
+      const loginDto = new LoginUserDto();
+      loginDto.email = 'test@example.com';
+      loginDto.password = 'password123';
+
+      const loggerSpy = jest.spyOn(controller['logger'], 'log');
+      authService.login.mockResolvedValue(mockLoginResponse);
+
+      await controller.login(loginDto, mockRequest);
+
+      expect(loggerSpy).toHaveBeenCalledWith(
+        'Login request for identifier: test@example.com from IP: 192.168.1.1',
+      );
+      expect(loggerSpy).toHaveBeenCalledWith(
+        `Login successful for user: ${mockUserResponse.id}`,
+      );
+    });
+
+    it('should log failed login attempts', async () => {
+      const loginDto = new LoginUserDto();
+      loginDto.email = 'test@example.com';
+      loginDto.password = 'wrongpassword';
+
+      const loggerSpy = jest.spyOn(controller['logger'], 'error');
+      const error = new UnauthorizedException('Invalid credentials');
+      authService.login.mockRejectedValue(error);
+
+      await expect(controller.login(loginDto, mockRequest)).rejects.toThrow(
+        error,
+      );
+
+      expect(loggerSpy).toHaveBeenCalledWith(
+        'Login failed for test@example.com: Invalid credentials',
+      );
+    });
+
+    it('should handle login with both email and username (email takes precedence)', async () => {
+      const loginDto = new LoginUserDto();
+      loginDto.email = 'test@example.com';
+      loginDto.username = 'testuser';
+      loginDto.password = 'password123';
+
+      authService.login.mockResolvedValue(mockLoginResponse);
+
+      const result = await controller.login(loginDto, mockRequest);
+
+      expect(authService.login).toHaveBeenCalledWith(loginDto, '192.168.1.1');
+      expect(result).toEqual(mockLoginResponse);
+    });
+
+    it('should return proper response structure', async () => {
+      const loginDto = new LoginUserDto();
+      loginDto.email = 'test@example.com';
+      loginDto.password = 'password123';
+
+      authService.login.mockResolvedValue(mockLoginResponse);
+
+      const result = await controller.login(loginDto, mockRequest);
+
+      expect(result).toHaveProperty('user');
+      expect(result).toHaveProperty('tokens');
+      expect(result.user).toHaveProperty('id');
+      expect(result.user).toHaveProperty('email');
+      expect(result.user).toHaveProperty('username');
+      expect(result.user).toHaveProperty('email_verified');
+      expect(result.tokens).toHaveProperty('accessToken');
+      expect(result.tokens).toHaveProperty('refreshToken');
+    });
+
+    it('should not expose sensitive information in logs', async () => {
+      const loginDto = new LoginUserDto();
+      loginDto.email = 'test@example.com';
+      loginDto.password = 'supersecretpassword';
+
+      const loggerSpy = jest.spyOn(controller['logger'], 'log');
+      authService.login.mockResolvedValue(mockLoginResponse);
+
+      await controller.login(loginDto, mockRequest);
+
+      const logCalls = loggerSpy.mock.calls.flat();
+      logCalls.forEach((call) => {
+        expect(call).not.toContain('supersecretpassword');
+      });
+    });
+
+    it('should handle empty string identifiers', async () => {
+      const loginDto = new LoginUserDto();
+      loginDto.email = '';
+      loginDto.password = 'password123';
+
+      authService.login.mockRejectedValue(
+        new UnauthorizedException('Email or username is required'),
+      );
+
+      await expect(controller.login(loginDto, mockRequest)).rejects.toThrow(
+        UnauthorizedException,
+      );
+    });
+
+    it('should validate login DTO structure', async () => {
+      const loginDto = new LoginUserDto();
+      loginDto.email = 'test@example.com';
+      loginDto.password = 'password123';
+
+      authService.login.mockResolvedValue(mockLoginResponse);
+
+      await controller.login(loginDto, mockRequest);
+
+      expect(authService.login).toHaveBeenCalledWith(
+        expect.objectContaining({
+          email: 'test@example.com',
+          password: 'password123',
+        }),
+        '192.168.1.1',
+      );
+    });
+
+    it('should handle rate limiting scenarios', async () => {
+      const loginDto = new LoginUserDto();
+      loginDto.email = 'test@example.com';
+      loginDto.password = 'password123';
+
+      authService.login.mockResolvedValue(mockLoginResponse);
+
+      // Simulate multiple rapid calls
+      const promises = Array(3)
+        .fill(null)
+        .map(() => {
+          const dto = new LoginUserDto();
+          dto.email = 'test@example.com';
+          dto.password = 'password123';
+          return controller.login(dto, mockRequest);
+        });
+      await Promise.all(promises);
+
+      expect(authService.login).toHaveBeenCalledTimes(3);
+    });
+
+    it('should extract IP from X-Forwarded-For header', async () => {
+      const loginDto = new LoginUserDto();
+      loginDto.email = 'test@example.com';
+      loginDto.password = 'password123';
+
+      const requestWithForwardedFor = {
+        headers: { 'x-forwarded-for': '203.0.113.1, 192.168.1.1' },
+        socket: { remoteAddress: '10.0.0.1' },
+      } as any;
+
+      authService.login.mockResolvedValue(mockLoginResponse);
+
+      await controller.login(loginDto, requestWithForwardedFor);
+
+      expect(authService.login).toHaveBeenCalledWith(loginDto, '203.0.113.1');
+    });
+
+    it('should extract IP from X-Real-IP header', async () => {
+      const loginDto = new LoginUserDto();
+      loginDto.email = 'test@example.com';
+      loginDto.password = 'password123';
+
+      const requestWithRealIp = {
+        headers: { 'x-real-ip': '203.0.113.2' },
+        socket: { remoteAddress: '10.0.0.1' },
+      } as any;
+
+      authService.login.mockResolvedValue(mockLoginResponse);
+
+      await controller.login(loginDto, requestWithRealIp);
+
+      expect(authService.login).toHaveBeenCalledWith(loginDto, '203.0.113.2');
+    });
+
+    it('should handle TooManyRequestsException for locked accounts', async () => {
+      const loginDto = new LoginUserDto();
+      loginDto.email = 'test@example.com';
+      loginDto.password = 'password123';
+
+      const tooManyRequestsError = new HttpException(
+        'Account temporarily locked due to too many failed attempts',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+      authService.login.mockRejectedValue(tooManyRequestsError);
+
+      await expect(controller.login(loginDto, mockRequest)).rejects.toThrow(
+        HttpException,
+      );
+      expect(authService.login).toHaveBeenCalledWith(loginDto, '192.168.1.1');
+    });
+
+    it('should fallback to unknown IP when no headers or socket info available', async () => {
+      const loginDto = new LoginUserDto();
+      loginDto.email = 'test@example.com';
+      loginDto.password = 'password123';
+
+      const requestWithoutIp = {
+        headers: {},
+        socket: {},
+      } as any;
+
+      authService.login.mockResolvedValue(mockLoginResponse);
+
+      await controller.login(loginDto, requestWithoutIp);
+
+      expect(authService.login).toHaveBeenCalledWith(loginDto, 'unknown');
     });
   });
 });

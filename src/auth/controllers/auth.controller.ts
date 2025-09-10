@@ -5,7 +5,10 @@ import {
   HttpStatus,
   HttpCode,
   Logger,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
+import { Throttle } from '@nestjs/throttler';
 import { CreateUserDto } from '../../users/dto/create-user.dto';
 import { AuthService, RegistrationResponse } from '../services/auth.service';
 import { EmailVerificationService } from '../services/email-verification.service';
@@ -14,6 +17,8 @@ import {
   ResendVerificationDto,
   VerificationResponseDto,
 } from '../dto/verify-email.dto';
+import { LoginUserDto } from '../dto/login-user.dto';
+import { LoginResponseDto } from '../dto/login-response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -145,5 +150,71 @@ export class AuthController {
           'If this email is registered, a verification email will be sent',
       };
     }
+  }
+
+  /**
+   * User login endpoint
+   * POST /auth/login
+   *
+   * @param loginUserDto - Login credentials (email/username + password)
+   * @returns User data and JWT tokens
+   */
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ login: { limit: 5, ttl: 60000 } })
+  async login(
+    @Body() loginUserDto: LoginUserDto,
+    @Req() request: Request,
+  ): Promise<LoginResponseDto> {
+    const identifier = loginUserDto.getIdentifier();
+    const ipAddress = this.getClientIp(request);
+
+    this.logger.log(
+      `Login request for identifier: ${identifier} from IP: ${ipAddress}`,
+    );
+
+    try {
+      const result = await this.authService.login(loginUserDto, ipAddress);
+
+      this.logger.log(`Login successful for user: ${result.user.id}`);
+
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Login failed for ${identifier}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Extracts client IP address from request headers and connection info
+   * @param request - Express request object
+   * @returns Client IP address
+   */
+  private getClientIp(request: Request): string {
+    // Check various headers that might contain the real client IP
+    const xForwardedFor = request.headers['x-forwarded-for'];
+    const xRealIp = request.headers['x-real-ip'];
+    const cfConnectingIp = request.headers['cf-connecting-ip']; // Cloudflare
+
+    if (xForwardedFor) {
+      // X-Forwarded-For can contain multiple IPs, take the first one
+      const ips = Array.isArray(xForwardedFor)
+        ? xForwardedFor[0]
+        : xForwardedFor;
+      return ips.split(',')[0].trim();
+    }
+
+    if (xRealIp) {
+      return Array.isArray(xRealIp) ? xRealIp[0] : xRealIp;
+    }
+
+    if (cfConnectingIp) {
+      return Array.isArray(cfConnectingIp) ? cfConnectingIp[0] : cfConnectingIp;
+    }
+
+    // Fallback to connection remote address
+    return request.socket.remoteAddress || 'unknown';
   }
 }

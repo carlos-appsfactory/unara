@@ -1,12 +1,22 @@
-import { ConflictException, Injectable, Logger } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { CreateUserDto } from '../../users/dto/create-user.dto';
 import { UserResponseDto } from '../dto/user-response.dto';
+import { LoginUserDto } from '../dto/login-user.dto';
+import { LoginResponseDto } from '../dto/login-response.dto';
 import { PasswordService } from './password.service';
 import { JwtAuthService } from './jwt-auth.service';
 import { EmailVerificationService } from './email-verification.service';
+import { LoginAttemptService } from './login-attempt.service';
 import { TokenPair } from '../interfaces/jwt-payload.interface';
 
 export interface RegistrationResponse {
@@ -25,6 +35,7 @@ export class AuthService {
     private readonly passwordService: PasswordService,
     private readonly jwtAuthService: JwtAuthService,
     private readonly emailVerificationService: EmailVerificationService,
+    private readonly loginAttemptService: LoginAttemptService,
   ) {}
 
   /**
@@ -189,6 +200,99 @@ export class AuthService {
     } catch (error) {
       this.logger.error(
         `Error validating credentials for ${identifier}: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Authenticates user with login credentials
+   * @param loginUserDto - Login credentials (email/username + password)
+   * @param ipAddress - Client IP address for brute force protection
+   * @returns Promise containing user data and JWT tokens
+   */
+  async login(
+    loginUserDto: LoginUserDto,
+    ipAddress?: string,
+  ): Promise<LoginResponseDto> {
+    const { password } = loginUserDto;
+    const identifier = loginUserDto.getIdentifier();
+
+    this.logger.log(
+      `Login attempt for identifier: ${identifier} from IP: ${ipAddress || 'unknown'}`,
+    );
+
+    try {
+      // Validate that we have an identifier
+      if (!loginUserDto.hasIdentifier()) {
+        throw new UnauthorizedException('Email or username is required');
+      }
+
+      // Check for account lockout due to failed attempts
+      if (ipAddress) {
+        const lockStatus = await this.loginAttemptService.isAccountLocked(
+          identifier,
+          ipAddress,
+        );
+        if (lockStatus.isLocked) {
+          this.logger.warn(
+            `Login blocked for ${identifier} from IP ${ipAddress}. Account locked for ${lockStatus.remainingLockTimeMinutes} minutes.`,
+          );
+          throw new HttpException(
+            `Account temporarily locked due to too many failed attempts. Please try again in ${lockStatus.remainingLockTimeMinutes} minutes.`,
+            HttpStatus.TOO_MANY_REQUESTS,
+          );
+        }
+      }
+
+      // Validate user credentials
+      const user = await this.validateUserCredentials(identifier, password);
+
+      if (!user) {
+        // Record failed login attempt
+        if (ipAddress) {
+          await this.loginAttemptService.recordFailedAttempt(
+            identifier,
+            ipAddress,
+          );
+        }
+
+        this.logger.warn(`Login failed for identifier: ${identifier}`);
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      // Clear any existing login attempts on successful authentication
+      if (ipAddress) {
+        await this.loginAttemptService.clearSuccessfulAttempt(
+          identifier,
+          ipAddress,
+        );
+      }
+
+      // Generate JWT tokens
+      const tokens = await this.jwtAuthService.generateTokens(
+        user.id,
+        user.email,
+        user.username,
+      );
+
+      this.logger.log(`Login successful for user: ${user.id}`);
+
+      // Return login response
+      return LoginResponseDto.create(user, tokens);
+    } catch (error) {
+      if (
+        error instanceof UnauthorizedException ||
+        (error instanceof HttpException &&
+          error.getStatus() === HttpStatus.TOO_MANY_REQUESTS)
+      ) {
+        this.logger.warn(`Login failed for ${identifier}: ${error.message}`);
+        throw error;
+      }
+
+      this.logger.error(
+        `Login error for ${identifier}: ${error.message}`,
         error.stack,
       );
       throw error;
