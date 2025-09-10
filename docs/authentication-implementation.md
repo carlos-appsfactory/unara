@@ -169,6 +169,37 @@ Enhanced validation system with unique constraint checking:
 - *`src/auth/validators/is-username-unique.validator.ts` - Username uniqueness validator with real-time checking*
 - *`src/users/dto/create-user.dto.ts` - Enhanced with unique validation decorators and proper field validation*
 
+## Authentication Middleware & Route Protection
+
+Complete authentication middleware system with comprehensive token management:
+
+- **JWT Authentication Guards**: Passport-based JWT strategy with request protection
+- **Protected Endpoints**: Profile, token refresh, and logout endpoints with JWT validation
+- **Token Blacklisting**: Real-time access token revocation system for immediate logout
+- **Automatic Cleanup**: Scheduled maintenance for expired tokens and old authentication records
+- **Enhanced Security**: Dual token invalidation (access + refresh) with comprehensive error handling
+
+*Files:*
+- *`src/auth/strategies/jwt.strategy.ts` - Passport JWT strategy with blacklist checking and token validation*
+- *`src/auth/guards/jwt-auth.guard.ts` - JWT authentication guard with comprehensive error handling*
+- *`src/auth/decorators/current-user.decorator.ts` - User extraction decorator for authenticated requests*
+- *`src/auth/services/token-blacklist.service.ts` - In-memory token blacklisting for immediate access revocation*
+- *`src/auth/services/token-cleanup.service.ts` - Automated cleanup service with cron jobs for token maintenance*
+
+## Token Lifecycle Management
+
+Advanced token management with automated maintenance and security features:
+
+- **Token Blacklisting**: Immediate access token invalidation during logout
+- **Scheduled Cleanup**: Hourly and daily cron jobs for expired token removal
+- **Memory Efficiency**: In-memory blacklist storage with automatic cleanup
+- **Database Maintenance**: Automated cleanup of old login attempts and expired refresh tokens
+- **Manual Operations**: Programmatic cleanup methods for immediate maintenance
+
+*Files:*
+- *`src/auth/interfaces/jwt-payload.interface.ts` - Enhanced JWT payload with token ID (jti) for blacklisting*
+- *`src/app.module.ts` - Schedule module configuration for automated maintenance*
+
 ## Current Status
 
-The authentication system is fully operational with complete user registration, email verification, and JWT token-based authentication. All components are thoroughly tested with 175+ passing tests covering authentication scenarios including password security, JWT token management, email verification, and API endpoint functionality. The system is production-ready with comprehensive error handling, security features, and proper validation.
+The authentication system is fully operational with complete user registration, email verification, JWT token-based authentication, and comprehensive middleware protection. All components are thoroughly tested with route protection, token blacklisting, and automated cleanup systems. The system includes protected API endpoints, real-time token revocation, and scheduled maintenance for production deployment. Authentication middleware successfully protects all routes with proper error handling and comprehensive security features.
