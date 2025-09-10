@@ -11,10 +11,20 @@ import { AuthService } from './services/auth.service';
 import { EmailVerificationService } from './services/email-verification.service';
 import { TokenBlacklistService } from './services/token-blacklist.service';
 import { TokenCleanupService } from './services/token-cleanup.service';
+import { OAuthService } from './services/oauth.service';
 import { RefreshToken } from './entities/refresh-token.entity';
+import { OAuthProvider } from './entities/oauth-provider.entity';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { FacebookStrategy } from './strategies/facebook.strategy';
+import { MicrosoftStrategy } from './strategies/microsoft.strategy';
+import { AppleStrategy } from './strategies/apple.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from './guards/optional-jwt.guard';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
+import { FacebookAuthGuard } from './guards/facebook-auth.guard';
+import { MicrosoftAuthGuard } from './guards/microsoft-auth.guard';
+import { AppleAuthGuard } from './guards/apple-auth.guard';
 import { AuthController } from './controllers/auth.controller';
 import { User } from '../users/entities/user.entity';
 import { LoginAttempt } from './entities/login-attempt.entity';
@@ -26,7 +36,7 @@ import { IsUsernameUniqueConstraint } from './validators/is-username-unique.vali
   imports: [
     ConfigModule,
     PassportModule,
-    TypeOrmModule.forFeature([RefreshToken, User, LoginAttempt]),
+    TypeOrmModule.forFeature([RefreshToken, User, LoginAttempt, OAuthProvider]),
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => [
@@ -65,9 +75,18 @@ import { IsUsernameUniqueConstraint } from './validators/is-username-unique.vali
     LoginAttemptService,
     TokenBlacklistService,
     TokenCleanupService,
+    OAuthService,
     JwtStrategy,
+    GoogleStrategy,
+    FacebookStrategy,
+    MicrosoftStrategy,
+    AppleStrategy,
     JwtAuthGuard,
     OptionalJwtAuthGuard,
+    GoogleAuthGuard,
+    FacebookAuthGuard,
+    MicrosoftAuthGuard,
+    AppleAuthGuard,
     IsEmailUniqueConstraint,
     IsUsernameUniqueConstraint,
   ],
@@ -77,6 +96,7 @@ import { IsUsernameUniqueConstraint } from './validators/is-username-unique.vali
     JwtAuthService,
     AuthService,
     EmailVerificationService,
+    OAuthService,
     JwtAuthGuard,
     OptionalJwtAuthGuard,
   ],

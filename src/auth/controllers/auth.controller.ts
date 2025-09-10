@@ -9,8 +9,9 @@ import {
   Req,
   UseGuards,
   UnauthorizedException,
+  Res,
 } from '@nestjs/common';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { CreateUserDto } from '../../users/dto/create-user.dto';
 import { AuthService, RegistrationResponse } from '../services/auth.service';
@@ -22,10 +23,17 @@ import {
 } from '../dto/verify-email.dto';
 import { LoginUserDto } from '../dto/login-user.dto';
 import { LoginResponseDto } from '../dto/login-response.dto';
+import { OAuthLoginResponseDto } from '../dto/oauth-login-response.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { GoogleAuthGuard } from '../guards/google-auth.guard';
+import { FacebookAuthGuard } from '../guards/facebook-auth.guard';
+import { MicrosoftAuthGuard } from '../guards/microsoft-auth.guard';
+import { AppleAuthGuard } from '../guards/apple-auth.guard';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import type { JwtPayload } from '../interfaces/jwt-payload.interface';
 import { TokenBlacklistService } from '../services/token-blacklist.service';
+import { OAuthService, OAuthProfile } from '../services/oauth.service';
+import { UserResponseDto } from '../dto/user-response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -35,6 +43,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly emailVerificationService: EmailVerificationService,
     private readonly tokenBlacklistService: TokenBlacklistService,
+    private readonly oauthService: OAuthService,
   ) {}
 
   /**
@@ -328,5 +337,192 @@ export class AuthController {
 
     this.logger.log(`Logout successful for user: ${user.sub}`);
     return { message: 'Logout successful' };
+  }
+
+  // =================== OAuth Authentication Endpoints ===================
+
+  /**
+   * Initiate Google OAuth authentication
+   * GET /auth/google
+   */
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async googleAuth(): Promise<void> {
+    // This method initiates the Google OAuth flow
+    // Passport will redirect to Google's OAuth server
+  }
+
+  /**
+   * Handle Google OAuth callback
+   * GET /auth/google/callback
+   */
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async googleAuthCallback(@Req() req: Request & { user: OAuthProfile }): Promise<OAuthLoginResponseDto> {
+    this.logger.log(`Google OAuth callback for user: ${req.user.providerId}`);
+
+    try {
+      const result = await this.oauthService.authenticateWithOAuth(req.user);
+
+      const response: OAuthLoginResponseDto = {
+        user: {
+          id: result.user.id,
+          email: result.user.email,
+          username: result.user.username,
+          fullname: result.user.fullname,
+          email_verified: result.user.email_verified,
+        },
+        accessToken: result.tokens.accessToken,
+        refreshToken: result.tokens.refreshToken,
+        provider: 'google',
+        isNewUser: result.isNewUser,
+      };
+
+      this.logger.log(`Google OAuth authentication successful for user: ${result.user.id}`);
+      return response;
+    } catch (error) {
+      this.logger.error(
+        `Google OAuth authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Initiate Facebook OAuth authentication
+   * GET /auth/facebook
+   */
+  @Get('facebook')
+  @UseGuards(FacebookAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async facebookAuth(): Promise<void> {
+    // This method initiates the Facebook OAuth flow
+    // Passport will redirect to Facebook's OAuth server
+  }
+
+  /**
+   * Handle Facebook OAuth callback
+   * GET /auth/facebook/callback
+   */
+  @Get('facebook/callback')
+  @UseGuards(FacebookAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async facebookAuthCallback(@Req() req: Request & { user: OAuthProfile }): Promise<OAuthLoginResponseDto> {
+    this.logger.log(`Facebook OAuth callback for user: ${req.user.providerId}`);
+
+    try {
+      const result = await this.oauthService.authenticateWithOAuth(req.user);
+
+      const response: OAuthLoginResponseDto = {
+        user: {
+          id: result.user.id,
+          email: result.user.email,
+          username: result.user.username,
+          fullname: result.user.fullname,
+          email_verified: result.user.email_verified,
+        },
+        accessToken: result.tokens.accessToken,
+        refreshToken: result.tokens.refreshToken,
+        provider: 'facebook',
+        isNewUser: result.isNewUser,
+      };
+
+      this.logger.log(`Facebook OAuth authentication successful for user: ${result.user.id}`);
+      return response;
+    } catch (error) {
+      this.logger.error(
+        `Facebook OAuth authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Initiate Microsoft OAuth authentication
+   * GET /auth/microsoft
+   */
+  @Get('microsoft')
+  @UseGuards(MicrosoftAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async microsoftAuth(): Promise<void> {
+    // This method initiates the Microsoft OAuth flow
+    // Passport will redirect to Microsoft's OAuth server
+  }
+
+  /**
+   * Handle Microsoft OAuth callback
+   * GET /auth/microsoft/callback
+   */
+  @Get('microsoft/callback')
+  @UseGuards(MicrosoftAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async microsoftAuthCallback(@Req() req: Request & { user: OAuthProfile }): Promise<OAuthLoginResponseDto> {
+    this.logger.log(`Microsoft OAuth callback for user: ${req.user.providerId}`);
+
+    try {
+      const result = await this.oauthService.authenticateWithOAuth(req.user);
+
+      const response: OAuthLoginResponseDto = {
+        user: {
+          id: result.user.id,
+          email: result.user.email,
+          username: result.user.username,
+          fullname: result.user.fullname,
+          email_verified: result.user.email_verified,
+        },
+        accessToken: result.tokens.accessToken,
+        refreshToken: result.tokens.refreshToken,
+        provider: 'microsoft',
+        isNewUser: result.isNewUser,
+      };
+
+      this.logger.log(`Microsoft OAuth authentication successful for user: ${result.user.id}`);
+      return response;
+    } catch (error) {
+      this.logger.error(
+        `Microsoft OAuth authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Handle Apple OAuth server-side validation
+   * POST /auth/apple
+   */
+  @Post('apple')
+  @UseGuards(AppleAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ login: { limit: 5, ttl: 60000 } })
+  async appleAuth(@Req() req: Request & { user: OAuthProfile }): Promise<OAuthLoginResponseDto> {
+    this.logger.log(`Apple OAuth authentication for user: ${req.user.providerId}`);
+
+    try {
+      const result = await this.oauthService.authenticateWithOAuth(req.user);
+
+      const response: OAuthLoginResponseDto = {
+        user: {
+          id: result.user.id,
+          email: result.user.email,
+          username: result.user.username,
+          fullname: result.user.fullname,
+          email_verified: result.user.email_verified,
+        },
+        accessToken: result.tokens.accessToken,
+        refreshToken: result.tokens.refreshToken,
+        provider: 'apple',
+        isNewUser: result.isNewUser,
+      };
+
+      this.logger.log(`Apple OAuth authentication successful for user: ${result.user.id}`);
+      return response;
+    } catch (error) {
+      this.logger.error(
+        `Apple OAuth authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      throw error;
+    }
   }
 }

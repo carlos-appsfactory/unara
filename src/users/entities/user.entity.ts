@@ -2,9 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { OAuthProvider } from '../../auth/entities/oauth-provider.entity';
 
 @Entity()
 export class User {
@@ -43,4 +45,7 @@ export class User {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @OneToMany(() => OAuthProvider, (oauthProvider) => oauthProvider.user)
+  oauthProviders: OAuthProvider[];
 }
