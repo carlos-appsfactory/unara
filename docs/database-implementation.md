@@ -11,12 +11,12 @@ A comprehensive user data storage system has been implemented with all necessary
 - **User Identification**: Each user gets a unique UUID identifier that never changes
 - **Login Credentials**: Email address and username fields with unique constraints
 - **Password Storage**: Password hash field for secure password storage
-- **Email Verification**: Boolean field tracking email verification status
+- **Email Verification**: Boolean field tracking email verification status with verification token support
 - **Profile Information**: Full name and profile picture URL fields
 - **Activity Tracking**: Timestamp field for last login tracking
 - **Automatic Timestamps**: Created and updated timestamp fields with automatic management
 
-*File: `src/users/entities/user.entity.ts` - Enhanced with authentication fields including password_hash, email_verified, last_login, and PostgreSQL-compatible UUID generation*
+*File: `src/users/entities/user.entity.ts` - Enhanced with authentication fields including password_hash, email_verified, email_verification_token, email_verification_expires_at, last_login, and PostgreSQL-compatible UUID generation*
 
 ## Database Migration System
 
@@ -29,6 +29,7 @@ A proper database migration system is now in place that allows:
 
 *Files:*
 - *`src/database/migrations/1703000001000-CreateUsersTable.ts` - Complete migration creating users table with PostgreSQL-specific features like UUID generation and proper constraints*
+- *`src/database/migrations/1757502018000-AddEmailVerificationFields.ts` - Email verification system migration adding verification token and expiration fields with optimized indexing*
 - *`src/database/data-source.ts` - TypeORM configuration for running migrations with environment-based settings*
 
 ## Database Connection and Configuration
