@@ -298,4 +298,57 @@ export class AuthService {
       throw error;
     }
   }
+
+  /**
+   * Refreshes access token using a valid refresh token
+   * @param refreshToken - The refresh token to use for generating new tokens
+   * @param userEmail - The user's email for token generation
+   * @param userUsername - The user's username for token generation
+   * @returns Promise containing new token pair
+   */
+  async refreshTokens(refreshToken: string, userEmail: string, userUsername: string): Promise<TokenPair> {
+    try {
+      this.logger.log('Refresh token request received');
+      
+      const tokenPair = await this.jwtAuthService.refreshTokens(refreshToken, userEmail, userUsername);
+      
+      this.logger.log('Token refresh successful');
+      return tokenPair;
+    } catch (error) {
+      this.logger.error(
+        `Token refresh failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : '',
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Logs out a user by invalidating their refresh token and blacklisting access token
+   * @param refreshToken - The refresh token to invalidate
+   * @param accessTokenJti - The access token JTI to blacklist (optional)
+   * @returns Promise that resolves when logout is complete
+   */
+  async logout(refreshToken: string, accessTokenJti?: string): Promise<void> {
+    try {
+      this.logger.log('Logout request received');
+      
+      // Revoke the refresh token
+      await this.jwtAuthService.revokeRefreshToken(refreshToken);
+      
+      // Blacklist the access token for immediate invalidation (if provided)
+      if (accessTokenJti) {
+        // We need to inject the TokenBlacklistService - will update constructor
+        this.logger.log(`Access token ${accessTokenJti} will be blacklisted by controller`);
+      }
+      
+      this.logger.log('Logout successful');
+    } catch (error) {
+      this.logger.error(
+        `Logout failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : '',
+      );
+      throw error;
+    }
+  }
 }

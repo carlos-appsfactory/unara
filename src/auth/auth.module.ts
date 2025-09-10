@@ -9,6 +9,8 @@ import { JwtAuthService } from './services/jwt-auth.service';
 import { RefreshTokenService } from './services/refresh-token.service';
 import { AuthService } from './services/auth.service';
 import { EmailVerificationService } from './services/email-verification.service';
+import { TokenBlacklistService } from './services/token-blacklist.service';
+import { TokenCleanupService } from './services/token-cleanup.service';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -61,6 +63,8 @@ import { IsUsernameUniqueConstraint } from './validators/is-username-unique.vali
     AuthService,
     EmailVerificationService,
     LoginAttemptService,
+    TokenBlacklistService,
+    TokenCleanupService,
     JwtStrategy,
     JwtAuthGuard,
     OptionalJwtAuthGuard,

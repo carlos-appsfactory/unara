@@ -4,12 +4,14 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import { JwtAuthService } from '../services/jwt-auth.service';
+import { TokenBlacklistService } from '../services/token-blacklist.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     private readonly configService: ConfigService,
     private readonly jwtAuthService: JwtAuthService,
+    private readonly tokenBlacklistService: TokenBlacklistService,
   ) {
     super({
       // Extract JWT from Authorization header as Bearer token
@@ -37,6 +39,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         throw new UnauthorizedException('Invalid token payload structure');
       }
 
+      // Check if token is blacklisted (for immediate token revocation)
+      if (payload.jti && this.tokenBlacklistService.isTokenBlacklisted(payload.jti)) {
+        throw new UnauthorizedException('Access token has been revoked');
+      }
+
       // Additional validation using our JWT service if needed
       // This ensures the token hasn't been tampered with beyond signature verification
       await this.jwtAuthService.validateToken(this.reconstructToken(payload));
@@ -47,6 +54,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         sub: payload.sub,
         email: payload.email,
         username: payload.username,
+        jti: payload.jti,
         iat: payload.iat,
         exp: payload.exp,
       };

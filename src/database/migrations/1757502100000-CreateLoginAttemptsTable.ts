@@ -54,25 +54,24 @@ export class CreateLoginAttemptsTable1757502100000
             isNullable: false,
           },
         ],
+        indices: [
+          {
+            name: 'IDX_login_attempts_identifier',
+            columnNames: ['identifier'],
+          },
+          {
+            name: 'IDX_login_attempts_ip_address',
+            columnNames: ['ip_address'],
+          },
+          {
+            name: 'IDX_login_attempts_blocked_until',
+            columnNames: ['blocked_until'],
+          },
+        ],
       }),
       true,
     );
 
-    // Create indexes for performance
-    await queryRunner.createIndex(
-      'login_attempts',
-      new Index('IDX_login_attempts_identifier', ['identifier']),
-    );
-
-    await queryRunner.createIndex(
-      'login_attempts',
-      new Index('IDX_login_attempts_ip_address', ['ip_address']),
-    );
-
-    await queryRunner.createIndex(
-      'login_attempts',
-      new Index('IDX_login_attempts_blocked_until', ['blocked_until']),
-    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

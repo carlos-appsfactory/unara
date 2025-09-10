@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan } from 'typeorm';
+import { Repository, LessThan, IsNull } from 'typeorm';
 import { LoginAttempt } from '../entities/login-attempt.entity';
 
 @Injectable()
@@ -68,7 +68,7 @@ export class LoginAttemptService {
           ip_address: ipAddress,
           attempt_count: 1,
           last_attempt: now,
-          blocked_until: null,
+          blocked_until: undefined,
         });
 
         await this.loginAttemptRepository.save(loginAttempt);
@@ -206,7 +206,7 @@ export class LoginAttemptService {
 
       const result = await this.loginAttemptRepository.delete({
         last_attempt: LessThan(cutoffDate),
-        blocked_until: null, // Only delete unblocked attempts
+        blocked_until: IsNull(), // Only delete unblocked attempts
       });
 
       if (result.affected && result.affected > 0) {

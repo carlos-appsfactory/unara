@@ -82,8 +82,8 @@ export class EmailVerificationService {
 
         // Clear expired token
         await this.userRepository.update(user.id, {
-          email_verification_token: null,
-          email_verification_expires_at: null,
+          email_verification_token: undefined,
+          email_verification_expires_at: undefined,
         });
 
         return null;
@@ -91,12 +91,12 @@ export class EmailVerificationService {
 
       // Check if email is already verified
       if (user.email_verified) {
-        this.logger.info(`Email already verified for user: ${user.id}`);
+        this.logger.log(`Email already verified for user: ${user.id}`);
 
         // Clear token since verification is already complete
         await this.userRepository.update(user.id, {
-          email_verification_token: null,
-          email_verification_expires_at: null,
+          email_verification_token: undefined,
+          email_verification_expires_at: undefined,
         });
 
         return user;
@@ -105,8 +105,8 @@ export class EmailVerificationService {
       // Mark email as verified and clear token
       await this.userRepository.update(user.id, {
         email_verified: true,
-        email_verification_token: null,
-        email_verification_expires_at: null,
+        email_verification_token: undefined,
+        email_verification_expires_at: undefined,
       });
 
       // Fetch updated user
@@ -153,7 +153,7 @@ export class EmailVerificationService {
 
       // Check if email is already verified
       if (user.email_verified) {
-        this.logger.info(
+        this.logger.log(
           `Verification resend attempted for already verified email: ${email}`,
         );
         throw new BadRequestException('Email is already verified');
@@ -183,8 +183,8 @@ export class EmailVerificationService {
         .createQueryBuilder()
         .update(User)
         .set({
-          email_verification_token: null,
-          email_verification_expires_at: null,
+          email_verification_token: undefined,
+          email_verification_expires_at: undefined,
         })
         .where('email_verification_expires_at < :now', { now: new Date() })
         .andWhere('email_verification_token IS NOT NULL')

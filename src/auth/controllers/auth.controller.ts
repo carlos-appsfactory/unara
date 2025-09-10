@@ -1,13 +1,16 @@
 import {
   Controller,
   Post,
+  Get,
   Body,
   HttpStatus,
   HttpCode,
   Logger,
   Req,
+  UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { Request } from 'express';
+import type { Request } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { CreateUserDto } from '../../users/dto/create-user.dto';
 import { AuthService, RegistrationResponse } from '../services/auth.service';
@@ -19,6 +22,10 @@ import {
 } from '../dto/verify-email.dto';
 import { LoginUserDto } from '../dto/login-user.dto';
 import { LoginResponseDto } from '../dto/login-response.dto';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { CurrentUser } from '../decorators/current-user.decorator';
+import type { JwtPayload } from '../interfaces/jwt-payload.interface';
+import { TokenBlacklistService } from '../services/token-blacklist.service';
 
 @Controller('auth')
 export class AuthController {
@@ -27,6 +34,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly emailVerificationService: EmailVerificationService,
+    private readonly tokenBlacklistService: TokenBlacklistService,
   ) {}
 
   /**
@@ -216,5 +224,109 @@ export class AuthController {
 
     // Fallback to connection remote address
     return request.socket.remoteAddress || 'unknown';
+  }
+
+  /**
+   * Get current authenticated user profile
+   * @param user - Current authenticated user from JWT
+   * @returns User profile data
+   */
+  @Get('profile')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async getProfile(@CurrentUser() user: JwtPayload): Promise<JwtPayload> {
+    this.logger.log(`Profile request for user: ${user.sub}`);
+    
+    return {
+      sub: user.sub,
+      email: user.email,
+      username: user.username,
+      iat: user.iat,
+      exp: user.exp,
+    };
+  }
+
+  /**
+   * Refresh access token using refresh token
+   * @param request - Express request containing refresh token
+   * @param user - Current authenticated user
+   * @returns New token pair
+   */
+  @Post('refresh')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(
+    @Req() request: Request,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    this.logger.log(`Token refresh request for user: ${user.sub}`);
+
+    // Extract refresh token from request body or Authorization header
+    const refreshToken = (request.body as any)?.refreshToken;
+    
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token is required');
+    }
+
+    try {
+      // Generate new token pair
+      const tokens = await this.authService.refreshTokens(refreshToken, user.email, user.username);
+      
+      this.logger.log(`Token refresh successful for user: ${user.sub}`);
+      
+      return tokens;
+    } catch (error) {
+      this.logger.error(
+        `Token refresh failed for user ${user.sub}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Logout user and invalidate refresh token
+   * @param request - Express request
+   * @param user - Current authenticated user
+   * @returns Success message
+   */
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async logout(
+    @Req() request: Request,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<{ message: string }> {
+    this.logger.log(`Logout request for user: ${user.sub}`);
+
+    const refreshToken = (request.body as any)?.refreshToken;
+    
+    // Blacklist the current access token for immediate invalidation
+    if (user.jti) {
+      try {
+        this.tokenBlacklistService.blacklistToken(user.jti);
+        this.logger.log(`Access token blacklisted for user: ${user.sub}`);
+      } catch (error) {
+        this.logger.error(
+          `Error blacklisting access token for user ${user.sub}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+        // Continue with logout even if blacklisting fails
+      }
+    }
+    
+    // Invalidate the refresh token
+    if (refreshToken) {
+      try {
+        await this.authService.logout(refreshToken);
+        this.logger.log(`Refresh token invalidated for user: ${user.sub}`);
+      } catch (error) {
+        this.logger.error(
+          `Error during logout for user ${user.sub}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+        // Continue with logout even if refresh token invalidation fails
+      }
+    }
+
+    this.logger.log(`Logout successful for user: ${user.sub}`);
+    return { message: 'Logout successful' };
   }
 }
