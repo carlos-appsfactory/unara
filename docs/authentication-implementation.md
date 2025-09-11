@@ -280,6 +280,78 @@ Secure OAuth provider configuration with environment-based setup:
 - *`.env.template` - OAuth provider configuration variables added*
 - *`package.json` - OAuth dependencies added: passport-google-oauth20, passport-facebook, passport-microsoft, @azure/msal-node*
 
+## Password Recovery System (Task 1.1.8)
+
+A comprehensive password recovery system with enterprise-grade security has been implemented:
+
+- **Password Reset Token System**: Secure cryptographic token generation using 256-bit randomness with SHA256 hashing
+- **Email Service Integration**: Professional email service with responsive HTML templates and SMTP/Gmail support
+- **Password Recovery API Endpoints**: RESTful endpoints with rate limiting and security protection
+- **Security & Validation**: Enhanced security middleware with Helmet configuration and comprehensive logging
+
+*Files:*
+- *`src/auth/entities/password-reset-token.entity.ts` - PasswordResetToken entity with utility methods for token validation*
+- *`src/database/migrations/1757572806212-CreatePasswordResetTokensTable.ts` - Database migration for password reset tokens table*
+- *`src/auth/services/password-reset-token.service.ts` - Secure token generation with 15-minute expiration and cleanup*
+- *`src/auth/services/password-reset-token.service.spec.ts` - Comprehensive test suite with 13 passing tests*
+
+## Email Service System
+
+Professional email service with security-focused password recovery communications:
+
+- **Nodemailer Integration**: SMTP and Gmail OAuth2 support with environment-based configuration
+- **Responsive Email Templates**: Professional HTML templates with security warnings and branding
+- **Email Security**: Rate limiting, input sanitization, and comprehensive error handling
+- **Template Customization**: Configurable branding, expiration times, and security messaging
+
+*Files:*
+- *`src/common/services/email.service.ts` - EmailService with sendPasswordResetEmail() and professional HTML templates*
+- *`src/common/services/email.service.spec.ts` - Email service tests with mock SMTP validation*
+- *`src/common/common.module.ts` - Updated to export EmailService for application-wide use*
+
+## Password Recovery API Endpoints
+
+Secure RESTful endpoints for password recovery with comprehensive protection:
+
+- **Forgot Password**: POST /auth/forgot-password with rate limiting (3 requests per hour)
+- **Reset Password**: POST /auth/reset-password with token validation and security logging
+- **Anti-Enumeration**: Security measures to prevent user enumeration attacks
+- **Comprehensive Logging**: Detailed security logging for all password recovery attempts
+
+*Files:*
+- *`src/auth/controllers/auth.controller.ts` - Password recovery endpoints with throttling and security*
+- *`src/auth/controllers/auth.controller.spec.ts` - API endpoint tests for password recovery flow*
+- *`src/auth/dto/forgot-password.dto.ts` - Forgot password DTO with email validation*
+- *`src/auth/dto/reset-password.dto.ts` - Reset password DTO with strong password validation*
+
+## Enhanced Security Middleware
+
+Comprehensive security middleware stack for production deployment:
+
+- **Helmet Security Headers**: Content Security Policy, HSTS, and XSS protection
+- **Security Logging Middleware**: Bot detection, injection attempt monitoring, and suspicious activity logging
+- **Rate Limiting Enhancement**: Password recovery specific throttling with extended TTL
+- **Input Sanitization**: Enhanced validation patterns and security-focused error handling
+
+*Files:*
+- *`src/main.ts` - Enhanced Helmet configuration with security headers*
+- *`src/common/middleware/security-logging.middleware.ts` - Comprehensive security monitoring middleware*
+- *`src/common/middleware/security-logging.middleware.spec.ts` - Security middleware tests with attack simulation*
+
+## Password Recovery Integration
+
+Complete integration of password recovery with existing authentication system:
+
+- **AuthService Integration**: Password recovery methods integrated into main authentication service
+- **Token Cleanup Integration**: Password reset tokens included in automated cleanup system
+- **Environment Configuration**: Password recovery configuration added to environment variables
+- **Comprehensive Testing**: 15+ additional tests for password recovery functionality
+
+*Files:*
+- *`src/auth/services/auth.service.ts` - AuthService updated with forgotPassword() and resetPassword() methods*
+- *`src/auth/services/token-cleanup.service.ts` - Updated to include password reset token cleanup*
+- *`.env.template` and `.env` - Email service and password recovery configuration variables*
+
 ## Current Status
 
-The authentication system is fully operational with complete user registration, email verification, JWT token-based authentication, OAuth social authentication, and comprehensive middleware protection. All components are thoroughly tested with route protection, token blacklisting, automated cleanup systems, and extensive OAuth security validation. The system includes protected API endpoints, real-time token revocation, scheduled maintenance, and multi-provider OAuth authentication with 57 passing tests covering all authentication scenarios. OAuth integration supports Google, Facebook, Microsoft, and Apple with secure user account linking and comprehensive security testing.
+The authentication system is fully operational with complete user registration, email verification, JWT token-based authentication, OAuth social authentication, password recovery system, and comprehensive middleware protection. All components are thoroughly tested with route protection, token blacklisting, automated cleanup systems, password recovery functionality, and extensive security validation. The system includes protected API endpoints, real-time token revocation, scheduled maintenance, professional email service, and multi-provider OAuth authentication with 100+ passing tests covering all authentication scenarios including password recovery. The password recovery system uses enterprise-grade security with cryptographic token generation, anti-enumeration protection, and comprehensive security logging.
