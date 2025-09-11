@@ -3,6 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { RefreshTokenService } from './refresh-token.service';
 import { TokenBlacklistService } from './token-blacklist.service';
 import { LoginAttemptService } from './login-attempt.service';
+import { PasswordResetTokenService } from './password-reset-token.service';
 
 /**
  * Service for automated cleanup of expired tokens and old records
@@ -15,6 +16,7 @@ export class TokenCleanupService {
     private readonly refreshTokenService: RefreshTokenService,
     private readonly tokenBlacklistService: TokenBlacklistService,
     private readonly loginAttemptService: LoginAttemptService,
+    private readonly passwordResetTokenService: PasswordResetTokenService,
   ) {}
 
   /**
@@ -28,6 +30,9 @@ export class TokenCleanupService {
       // Clean up expired refresh tokens
       const expiredRefreshTokens = await this.refreshTokenService.cleanupExpiredTokens();
       
+      // Clean up expired password reset tokens
+      const expiredPasswordResetTokens = await this.passwordResetTokenService.cleanupExpiredTokens();
+      
       // Clean up old blacklisted access tokens (older than 2 hours)
       // Since access tokens typically expire in 15-60 minutes, 
       // blacklisted tokens older than 2 hours are safe to remove
@@ -39,6 +44,7 @@ export class TokenCleanupService {
 
       this.logger.log(
         `Hourly cleanup completed: ${expiredRefreshTokens} refresh tokens, ` +
+        `${expiredPasswordResetTokens} password reset tokens, ` +
         `${expiredBlacklistedTokens} blacklisted tokens, ` +
         `${cleanedLoginAttempts} login attempts cleaned`
       );
@@ -89,6 +95,7 @@ export class TokenCleanupService {
    */
   async performManualCleanup(): Promise<{
     refreshTokens: number;
+    passwordResetTokens: number;
     blacklistedTokens: number;
     loginAttempts: number;
   }> {
@@ -96,18 +103,21 @@ export class TokenCleanupService {
 
     try {
       const refreshTokens = await this.refreshTokenService.cleanupExpiredTokens();
+      const passwordResetTokens = await this.passwordResetTokenService.cleanupExpiredTokens();
       const blacklistedTokens = this.tokenBlacklistService.cleanupExpiredBlacklistedTokens(60);
       await this.loginAttemptService.cleanupOldAttempts();
       const loginAttempts = 0; // LoginAttemptService cleanup doesn't return count
 
       this.logger.log(
         `Manual cleanup completed: ${refreshTokens} refresh tokens, ` +
+        `${passwordResetTokens} password reset tokens, ` +
         `${blacklistedTokens} blacklisted tokens, ` +
         `${loginAttempts} login attempts cleaned`
       );
 
       return {
         refreshTokens,
+        passwordResetTokens,
         blacklistedTokens,
         loginAttempts,
       };

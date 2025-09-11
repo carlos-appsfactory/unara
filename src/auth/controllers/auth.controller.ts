@@ -34,6 +34,8 @@ import type { JwtPayload } from '../interfaces/jwt-payload.interface';
 import { TokenBlacklistService } from '../services/token-blacklist.service';
 import { OAuthService, OAuthProfile } from '../services/oauth.service';
 import { UserResponseDto } from '../dto/user-response.dto';
+import { ForgotPasswordDto } from '../dto/forgot-password.dto';
+import { ResetPasswordDto } from '../dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -521,6 +523,72 @@ export class AuthController {
     } catch (error) {
       this.logger.error(
         `Apple OAuth authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      throw error;
+    }
+  }
+
+  // =================== Password Recovery Endpoints ===================
+
+  /**
+   * Initiate password reset process
+   * POST /auth/forgot-password
+   *
+   * @param forgotPasswordDto - Email address for password reset
+   * @returns Success message (same response regardless of email existence)
+   */
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ password_reset: { limit: 3, ttl: 3600000 } }) // 3 requests per hour
+  async forgotPassword(
+    @Body() forgotPasswordDto: ForgotPasswordDto,
+  ): Promise<{ message: string }> {
+    this.logger.log(`Password reset requested for email: ${forgotPasswordDto.email}`);
+
+    try {
+      await this.authService.forgotPassword(forgotPasswordDto);
+
+      // Always return the same response to prevent user enumeration
+      return {
+        message: 'If this email is registered, you will receive a password reset link shortly.',
+      };
+    } catch (error) {
+      this.logger.error(
+        `Password reset request failed for ${forgotPasswordDto.email}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+
+      // Return success message even for errors to prevent user enumeration
+      return {
+        message: 'If this email is registered, you will receive a password reset link shortly.',
+      };
+    }
+  }
+
+  /**
+   * Reset password using valid reset token
+   * POST /auth/reset-password
+   *
+   * @param resetPasswordDto - Reset token and new password
+   * @returns Success message
+   */
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ password_reset: { limit: 5, ttl: 3600000 } }) // 5 requests per hour
+  async resetPassword(
+    @Body() resetPasswordDto: ResetPasswordDto,
+  ): Promise<{ message: string }> {
+    this.logger.log('Password reset attempt with token');
+
+    try {
+      await this.authService.resetPassword(resetPasswordDto);
+
+      this.logger.log('Password reset successful');
+      return {
+        message: 'Password has been reset successfully. Please login with your new password.',
+      };
+    } catch (error) {
+      this.logger.error(
+        `Password reset failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
       throw error;
     }

@@ -1,13 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { AuthService, RegistrationResponse } from './auth.service';
 import { PasswordService } from './password.service';
 import { JwtAuthService } from './jwt-auth.service';
 import { EmailVerificationService } from './email-verification.service';
+import { LoginAttemptService } from './login-attempt.service';
+import { PasswordResetTokenService } from './password-reset-token.service';
+import { EmailService } from '../../common/services/email.service';
 import { User } from '../../users/entities/user.entity';
 import { CreateUserDto } from '../../users/dto/create-user.dto';
+import { ForgotPasswordDto } from '../dto/forgot-password.dto';
+import { ResetPasswordDto } from '../dto/reset-password.dto';
 import { TokenPair } from '../interfaces/jwt-payload.interface';
 
 describe('AuthService', () => {
@@ -16,13 +21,19 @@ describe('AuthService', () => {
   let passwordService: jest.Mocked<PasswordService>;
   let jwtAuthService: jest.Mocked<JwtAuthService>;
   let emailVerificationService: jest.Mocked<EmailVerificationService>;
+  let loginAttemptService: jest.Mocked<LoginAttemptService>;
+  let passwordResetTokenService: jest.Mocked<PasswordResetTokenService>;
+  let emailService: jest.Mocked<EmailService>;
 
   const mockUser: User = {
     id: '123e4567-e89b-12d3-a456-426614174000',
     email: 'test@example.com',
     username: 'testuser',
     password_hash: 'hashed_password_123',
+    fullname: 'Test User',
     email_verified: false,
+    email_verification_token: null,
+    email_verification_expires_at: null,
     last_login: null,
     createdAt: new Date('2024-01-01T00:00:00Z'),
     updatedAt: new Date('2024-01-01T00:00:00Z'),
@@ -59,6 +70,23 @@ describe('AuthService', () => {
       generateVerificationToken: jest.fn(),
     };
 
+    const mockLoginAttemptService = {
+      isAccountLocked: jest.fn(),
+      recordFailedAttempt: jest.fn(),
+      clearSuccessfulAttempt: jest.fn(),
+    };
+
+    const mockPasswordResetTokenService = {
+      generatePasswordResetToken: jest.fn(),
+      validateAndConsumeToken: jest.fn(),
+    };
+
+    const mockEmailService = {
+      sendPasswordResetEmail: jest.fn(),
+      sendEmail: jest.fn(),
+      testConnection: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -78,6 +106,18 @@ describe('AuthService', () => {
           provide: EmailVerificationService,
           useValue: mockEmailVerificationService,
         },
+        {
+          provide: LoginAttemptService,
+          useValue: mockLoginAttemptService,
+        },
+        {
+          provide: PasswordResetTokenService,
+          useValue: mockPasswordResetTokenService,
+        },
+        {
+          provide: EmailService,
+          useValue: mockEmailService,
+        },
       ],
     }).compile();
 
@@ -86,6 +126,9 @@ describe('AuthService', () => {
     passwordService = module.get(PasswordService);
     jwtAuthService = module.get(JwtAuthService);
     emailVerificationService = module.get(EmailVerificationService);
+    loginAttemptService = module.get(LoginAttemptService);
+    passwordResetTokenService = module.get(PasswordResetTokenService);
+    emailService = module.get(EmailService);
   });
 
   afterEach(() => {
@@ -411,6 +454,146 @@ describe('AuthService', () => {
       expect(saveCall.last_login.getTime()).toBeLessThanOrEqual(
         afterTime.getTime(),
       );
+    });
+  });
+
+  describe('Password Recovery', () => {
+    describe('forgotPassword', () => {
+      const forgotPasswordDto: ForgotPasswordDto = {
+        email: 'user@example.com',
+      };
+
+      it('should successfully initiate password reset for existing user', async () => {
+        userRepository.findOne.mockResolvedValue(mockUser);
+        passwordResetTokenService.generatePasswordResetToken.mockResolvedValue('reset-token-123');
+        emailService.sendPasswordResetEmail.mockResolvedValue(undefined);
+
+        await service.forgotPassword(forgotPasswordDto);
+
+        expect(userRepository.findOne).toHaveBeenCalledWith({
+          where: { email: forgotPasswordDto.email },
+        });
+        expect(passwordResetTokenService.generatePasswordResetToken).toHaveBeenCalledWith(mockUser.id);
+        expect(emailService.sendPasswordResetEmail).toHaveBeenCalledWith(
+          mockUser.email,
+          'reset-token-123',
+          mockUser.username
+        );
+      });
+
+      it('should complete silently for non-existent user (security)', async () => {
+        userRepository.findOne.mockResolvedValue(null);
+
+        await service.forgotPassword(forgotPasswordDto);
+
+        expect(userRepository.findOne).toHaveBeenCalledWith({
+          where: { email: forgotPasswordDto.email },
+        });
+        expect(passwordResetTokenService.generatePasswordResetToken).not.toHaveBeenCalled();
+        expect(emailService.sendPasswordResetEmail).not.toHaveBeenCalled();
+      });
+
+      it('should handle email service errors gracefully', async () => {
+        userRepository.findOne.mockResolvedValue(mockUser);
+        passwordResetTokenService.generatePasswordResetToken.mockResolvedValue('reset-token-123');
+        emailService.sendPasswordResetEmail.mockRejectedValue(new Error('Email service unavailable'));
+
+        await expect(service.forgotPassword(forgotPasswordDto)).rejects.toThrow(
+          'Email service unavailable'
+        );
+
+        expect(passwordResetTokenService.generatePasswordResetToken).toHaveBeenCalledWith(mockUser.id);
+        expect(emailService.sendPasswordResetEmail).toHaveBeenCalledWith(
+          mockUser.email,
+          'reset-token-123',
+          mockUser.username
+        );
+      });
+
+      it('should handle token generation errors', async () => {
+        userRepository.findOne.mockResolvedValue(mockUser);
+        passwordResetTokenService.generatePasswordResetToken.mockRejectedValue(
+          new Error('Token generation failed')
+        );
+
+        await expect(service.forgotPassword(forgotPasswordDto)).rejects.toThrow(
+          'Token generation failed'
+        );
+
+        expect(userRepository.findOne).toHaveBeenCalledWith({
+          where: { email: forgotPasswordDto.email },
+        });
+        expect(passwordResetTokenService.generatePasswordResetToken).toHaveBeenCalledWith(mockUser.id);
+        expect(emailService.sendPasswordResetEmail).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('resetPassword', () => {
+      const resetPasswordDto: ResetPasswordDto = {
+        token: 'valid-reset-token-123',
+        newPassword: 'NewSecurePass123!',
+      };
+
+      it('should successfully reset password with valid token', async () => {
+        passwordResetTokenService.validateAndConsumeToken.mockResolvedValue(mockUser.id);
+        userRepository.findOne.mockResolvedValue(mockUser);
+        passwordService.hashPassword.mockResolvedValue('new_hashed_password');
+        userRepository.save.mockResolvedValue({ ...mockUser, password_hash: 'new_hashed_password' });
+
+        await service.resetPassword(resetPasswordDto);
+
+        expect(passwordResetTokenService.validateAndConsumeToken).toHaveBeenCalledWith(resetPasswordDto.token);
+        expect(userRepository.findOne).toHaveBeenCalledWith({
+          where: { id: mockUser.id },
+        });
+        expect(passwordService.hashPassword).toHaveBeenCalledWith(resetPasswordDto.newPassword);
+        expect(userRepository.save).toHaveBeenCalledWith({
+          ...mockUser,
+          password_hash: 'new_hashed_password',
+        });
+      });
+
+      it('should throw UnauthorizedException for invalid token', async () => {
+        passwordResetTokenService.validateAndConsumeToken.mockRejectedValue(
+          new UnauthorizedException('Invalid reset token')
+        );
+
+        await expect(service.resetPassword(resetPasswordDto)).rejects.toThrow(
+          UnauthorizedException
+        );
+
+        expect(passwordResetTokenService.validateAndConsumeToken).toHaveBeenCalledWith(resetPasswordDto.token);
+        expect(userRepository.findOne).not.toHaveBeenCalled();
+        expect(passwordService.hashPassword).not.toHaveBeenCalled();
+      });
+
+      it('should throw UnauthorizedException when user not found', async () => {
+        passwordResetTokenService.validateAndConsumeToken.mockResolvedValue(mockUser.id);
+        userRepository.findOne.mockResolvedValue(null);
+
+        await expect(service.resetPassword(resetPasswordDto)).rejects.toThrow(
+          UnauthorizedException
+        );
+
+        expect(passwordResetTokenService.validateAndConsumeToken).toHaveBeenCalledWith(resetPasswordDto.token);
+        expect(userRepository.findOne).toHaveBeenCalledWith({
+          where: { id: mockUser.id },
+        });
+        expect(passwordService.hashPassword).not.toHaveBeenCalled();
+      });
+
+      it('should handle password hashing errors', async () => {
+        passwordResetTokenService.validateAndConsumeToken.mockResolvedValue(mockUser.id);
+        userRepository.findOne.mockResolvedValue(mockUser);
+        passwordService.hashPassword.mockRejectedValue(new Error('Hashing failed'));
+
+        await expect(service.resetPassword(resetPasswordDto)).rejects.toThrow(
+          'Hashing failed'
+        );
+
+        expect(passwordService.hashPassword).toHaveBeenCalledWith(resetPasswordDto.newPassword);
+        expect(userRepository.save).not.toHaveBeenCalled();
+      });
     });
   });
 });

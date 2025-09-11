@@ -4,6 +4,9 @@ import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { CommonModule } from '../common/common.module';
+import { EnhancedThrottlerGuard } from '../common/guards/enhanced-throttler.guard';
 import { PasswordService } from './services/password.service';
 import { JwtAuthService } from './services/jwt-auth.service';
 import { RefreshTokenService } from './services/refresh-token.service';
@@ -11,8 +14,10 @@ import { AuthService } from './services/auth.service';
 import { EmailVerificationService } from './services/email-verification.service';
 import { TokenBlacklistService } from './services/token-blacklist.service';
 import { TokenCleanupService } from './services/token-cleanup.service';
+import { PasswordResetTokenService } from './services/password-reset-token.service';
 import { OAuthService } from './services/oauth.service';
 import { RefreshToken } from './entities/refresh-token.entity';
+import { PasswordResetToken } from './entities/password-reset-token.entity';
 import { OAuthProvider } from './entities/oauth-provider.entity';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
@@ -35,8 +40,9 @@ import { IsUsernameUniqueConstraint } from './validators/is-username-unique.vali
 @Module({
   imports: [
     ConfigModule,
+    CommonModule,
     PassportModule,
-    TypeOrmModule.forFeature([RefreshToken, User, LoginAttempt, OAuthProvider]),
+    TypeOrmModule.forFeature([RefreshToken, PasswordResetToken, User, LoginAttempt, OAuthProvider]),
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => [
@@ -44,6 +50,11 @@ import { IsUsernameUniqueConstraint } from './validators/is-username-unique.vali
           name: 'login',
           ttl: 60 * 1000, // 1 minute
           limit: 5, // 5 attempts per minute per IP
+        },
+        {
+          name: 'password_reset',
+          ttl: 60 * 60 * 1000, // 1 hour
+          limit: 3, // 3 requests per hour per IP for forgot password
         },
         {
           name: 'global',
@@ -75,6 +86,7 @@ import { IsUsernameUniqueConstraint } from './validators/is-username-unique.vali
     LoginAttemptService,
     TokenBlacklistService,
     TokenCleanupService,
+    PasswordResetTokenService,
     OAuthService,
     JwtStrategy,
     GoogleStrategy,
@@ -89,6 +101,11 @@ import { IsUsernameUniqueConstraint } from './validators/is-username-unique.vali
     AppleAuthGuard,
     IsEmailUniqueConstraint,
     IsUsernameUniqueConstraint,
+    EnhancedThrottlerGuard,
+    {
+      provide: APP_GUARD,
+      useClass: EnhancedThrottlerGuard,
+    },
   ],
   exports: [
     PasswordService,
@@ -96,6 +113,7 @@ import { IsUsernameUniqueConstraint } from './validators/is-username-unique.vali
     JwtAuthService,
     AuthService,
     EmailVerificationService,
+    PasswordResetTokenService,
     OAuthService,
     JwtAuthGuard,
     OptionalJwtAuthGuard,

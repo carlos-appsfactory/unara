@@ -17,7 +17,11 @@ import { PasswordService } from './password.service';
 import { JwtAuthService } from './jwt-auth.service';
 import { EmailVerificationService } from './email-verification.service';
 import { LoginAttemptService } from './login-attempt.service';
+import { PasswordResetTokenService } from './password-reset-token.service';
+import { EmailService } from '../../common/services/email.service';
 import { TokenPair } from '../interfaces/jwt-payload.interface';
+import { ForgotPasswordDto } from '../dto/forgot-password.dto';
+import { ResetPasswordDto } from '../dto/reset-password.dto';
 
 export interface RegistrationResponse {
   user: UserResponseDto;
@@ -36,6 +40,8 @@ export class AuthService {
     private readonly jwtAuthService: JwtAuthService,
     private readonly emailVerificationService: EmailVerificationService,
     private readonly loginAttemptService: LoginAttemptService,
+    private readonly passwordResetTokenService: PasswordResetTokenService,
+    private readonly emailService: EmailService,
   ) {}
 
   /**
@@ -346,6 +352,89 @@ export class AuthService {
     } catch (error) {
       this.logger.error(
         `Logout failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : '',
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Initiates password reset process by generating reset token and sending email
+   * @param forgotPasswordDto - Contains user email
+   * @returns Promise that resolves when email is sent
+   */
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<void> {
+    const { email } = forgotPasswordDto;
+    
+    this.logger.log(`Password reset requested for email: ${email}`);
+    
+    try {
+      // Find user by email - but don't reveal if user exists or not
+      const user = await this.findUserByEmail(email);
+      
+      if (user) {
+        // Generate password reset token
+        const resetToken = await this.passwordResetTokenService.generatePasswordResetToken(user.id);
+        
+        // Send password reset email
+        await this.emailService.sendPasswordResetEmail(
+          user.email,
+          resetToken,
+          user.username
+        );
+        
+        this.logger.log(`Password reset email sent successfully to: ${email}`);
+      } else {
+        // Still log but don't reveal user doesn't exist (security best practice)
+        this.logger.log(`Password reset requested for non-existent email: ${email}`);
+      }
+      
+      // Always return success to prevent user enumeration attacks
+      // The user will get the same response whether the email exists or not
+    } catch (error) {
+      this.logger.error(
+        `Password reset request failed for ${email}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : '',
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Resets user password using valid reset token
+   * @param resetPasswordDto - Contains reset token and new password
+   * @returns Promise that resolves when password is updated
+   */
+  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<void> {
+    const { token, newPassword } = resetPasswordDto;
+    
+    this.logger.log('Password reset attempt with token');
+    
+    try {
+      // Validate and consume the reset token
+      const userId = await this.passwordResetTokenService.validateAndConsumeToken(token);
+      
+      // Find user by ID
+      const user = await this.userRepository.findOne({
+        where: { id: userId }
+      });
+      
+      if (!user) {
+        this.logger.error(`User not found for password reset. User ID: ${userId}`);
+        throw new UnauthorizedException('Invalid reset token');
+      }
+      
+      // Hash the new password
+      const newPasswordHash = await this.passwordService.hashPassword(newPassword);
+      
+      // Update user's password
+      user.password_hash = newPasswordHash;
+      await this.userRepository.save(user);
+      
+      this.logger.log(`Password reset successful for user: ${user.id}`);
+    } catch (error) {
+      this.logger.error(
+        `Password reset failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         error instanceof Error ? error.stack : '',
       );
       throw error;
