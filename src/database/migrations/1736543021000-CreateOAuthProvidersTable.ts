@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, Table, Index, ForeignKey } from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableForeignKey } from 'typeorm';
 
 export class CreateOAuthProvidersTable1736543021000 implements MigrationInterface {
   name = 'CreateOAuthProvidersTable1736543021000';
@@ -57,21 +57,31 @@ export class CreateOAuthProvidersTable1736543021000 implements MigrationInterfac
           },
         ],
         indices: [
-          new Index('IDX_oauth_providers_user_id', ['user_id']),
-          new Index('IDX_oauth_providers_provider', ['provider_name', 'provider_id']),
-          new Index('IDX_oauth_providers_user_provider', ['user_id', 'provider_name'], { isUnique: true }),
+          {
+            name: 'IDX_oauth_providers_user_id',
+            columnNames: ['user_id'],
+          },
+          {
+            name: 'IDX_oauth_providers_provider',
+            columnNames: ['provider_name', 'provider_id'],
+          },
+          {
+            name: 'IDX_oauth_providers_user_provider',
+            columnNames: ['user_id', 'provider_name'],
+            isUnique: true,
+          },
         ],
       }),
     );
 
     await queryRunner.createForeignKey(
       'oauth_providers',
-      new ForeignKey({
+      new TableForeignKey({
         columnNames: ['user_id'],
         referencedColumnNames: ['id'],
         referencedTableName: 'user',
         onDelete: 'CASCADE',
-      }),
+      })
     );
   }
 
