@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Place } from "src/places/entities/place.entity";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class Trip {
@@ -19,6 +20,13 @@ export class Trip {
 
     @Column({ type: 'timestamptz' })
     endDate: Date;
+    
+    @OneToMany(
+        () => Place, 
+        place => place.trip, 
+        { cascade: true }
+    )
+    places: Place[];
 
     // TODO: Añadir relación con usuarios
 
