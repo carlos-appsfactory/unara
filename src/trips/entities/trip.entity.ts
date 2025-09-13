@@ -1,4 +1,5 @@
 import { Place } from "src/places/entities/place.entity";
+import { Luggage } from "src/luggage/entities/luggage.entity";
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
@@ -27,6 +28,12 @@ export class Trip {
         { cascade: true }
     )
     places: Place[];
+
+    @OneToMany(
+      () => Luggage, 
+      luggage => luggage.trip
+    )
+    luggage: Luggage[];
 
     // TODO: Añadir relación con usuarios
 
