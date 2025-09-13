@@ -20,7 +20,7 @@ import { ItemCategoriesModule } from './item-categories/item-categories.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       autoLoadEntities: true,
-      synchronize: true, // TODO: Esto se tiene que quitar en producción
+      synchronize: process.env.DB_SYNCHRONIZE === 'true',
     }),
 
     LuggageModule,
