@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Luggage } from "src/luggage/entities/luggage.entity";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class Trip {
@@ -19,6 +20,12 @@ export class Trip {
 
     @Column({ type: 'timestamptz' })
     endDate: Date;
+
+    @OneToMany(
+      () => Luggage, 
+      luggage => luggage.trip
+    )
+    luggage: Luggage[];
 
     // TODO: Añadir relación con usuarios
 
