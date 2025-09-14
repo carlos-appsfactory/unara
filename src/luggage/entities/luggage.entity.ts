@@ -1,6 +1,7 @@
 import { LuggageCategory } from "src/luggage-categories/entities/luggage-category.entity";
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { LuggageItem } from "./luggage-item.entity";
+import { Trip } from "src/trips/entities/trip.entity";
 
 @Entity()
 export class Luggage {
@@ -25,12 +26,18 @@ export class Luggage {
     )
     luggageItems: LuggageItem[];
 
-    // TODO viaje asociado
+    @ManyToOne(
+      () => Trip,
+      trip => trip.luggage,
+      { nullable: true, onDelete: 'SET NULL' }
+    )
+    trip?: Trip;
+
     // TODO usuario asociado
     
-    @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @CreateDateColumn()
     createdAt: Date;
 
-    @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @UpdateDateColumn()
     updatedAt: Date;
 }
