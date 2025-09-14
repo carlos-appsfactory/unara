@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsUUID } from "class-validator"
+import { IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator"
 
 
 export class CreateLuggageDto {
@@ -9,4 +9,8 @@ export class CreateLuggageDto {
     @IsUUID()
     @IsNotEmpty()
     categoryId: string
+
+    @IsUUID()
+    @IsOptional()
+    tripId?: string
 }
