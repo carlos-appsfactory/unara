@@ -6,6 +6,7 @@ import { Luggage } from '../entities/luggage.entity';
 import { CreateLuggageDto } from '../dto/create-luggage.dto';
 import { FilterLuggageDto } from '../dto/filter-luggage.dto';
 import { UpdateLuggageDto } from '../dto/update-luggage.dto';
+import { Trip } from 'src/trips/entities/trip.entity';
 
 @Injectable()
 export class LuggageService {
@@ -18,19 +19,30 @@ export class LuggageService {
 
     @InjectRepository(LuggageCategory)
     private readonly luggageCategoryRepository: Repository<LuggageCategory>,
+
+    @InjectRepository(Trip)
+    private readonly tripRepository: Repository<Trip>,
   ){}
 
   async create(createLuggageDto: CreateLuggageDto) {
     try {
-      const { categoryId, ...luggageData } = createLuggageDto
+      const { categoryId, tripId, ...luggageData } = createLuggageDto
 
       const category = await this.luggageCategoryRepository.findOneBy({ id: categoryId })
 
       if (!category) throw new NotFoundException(`Category with id ${categoryId} not found`)
 
+      let trip: Trip | null = null;
+      if (tripId) {
+        trip = await this.tripRepository.findOneBy({ id: tripId })
+
+        if (!trip) throw new NotFoundException(`Trip with id ${tripId} not found`)
+      }
+
       const luggage = this.luggageRepository.create({
         ...luggageData,
-        category
+        category,
+        ...(trip ? { trip } : {}),
       })
       
       await this.luggageRepository.save(luggage)
@@ -47,15 +59,19 @@ export class LuggageService {
       offset = 0,
       name,
       categoryId,
+      tripId,
     } = filterLuggageDto
 
     const query = this.luggageRepository
                     .createQueryBuilder('luggage')
                     .leftJoinAndSelect('luggage.category', 'category')
+                    .leftJoinAndSelect('luggage.trip', 'trip')
 
     if (name) query.andWhere('luggage.name ILIKE :name', { name: `%${name}%`})
     
     if (categoryId) query.andWhere('category.id = :categoryId', { categoryId})
+
+    if (tripId) query.andWhere('trip.id = :tripId', { tripId })
 
     query.skip(offset).take(limit)
 
@@ -76,7 +92,7 @@ export class LuggageService {
   }
 
   async update(id: string, updateLuggageDto: UpdateLuggageDto) {
-    const { categoryId, ...luggageData } = updateLuggageDto;
+    const { categoryId, tripId, ...luggageData } = updateLuggageDto;
 
     let category: LuggageCategory | null = null;
     if (categoryId) {
@@ -85,10 +101,18 @@ export class LuggageService {
       if (!category) throw new NotFoundException(`Category with id ${categoryId} not found`)
     }
 
+    let trip: Trip | null = null;
+    if (tripId) {
+      trip = await this.tripRepository.findOneBy({ id: tripId })
+
+      if (!trip) throw new NotFoundException(`Trip with id ${tripId} not found`)
+    }
+
     const luggage = await this.luggageRepository.preload({
       id,
       ...luggageData,
       ...(category ? { category } : {}),
+      ...(trip ? { trip } : {}),
     })
 
     if (!luggage){
