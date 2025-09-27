@@ -9,22 +9,15 @@ import { FilterTripDto } from './dto/filter-trip.dto';
 @Injectable()
 export class TripsService {
 
-  private readonly logger = new Logger('TripsService')
-
   constructor(
     @InjectRepository(Trip)
     private readonly tripRepository: Repository<Trip>
   ){}
 
   async create(dto: CreateTripDto) {
-    try {
-      const trip = this.tripRepository.create(dto)
-      await this.tripRepository.save(trip)
-      return trip
-
-    } catch (error) {
-      this.handleExceptions(error)
-    }
+    const trip = this.tripRepository.create(dto)
+    await this.tripRepository.save(trip)
+    return trip
   }
 
   async findAll(dto: FilterTripDto) {
@@ -75,13 +68,8 @@ export class TripsService {
       throw new NotFoundException(`Trip with id ${id} not found`)
     }
 
-    try {
-      await this.tripRepository.save(trip)
-      return trip
-    
-    } catch (error) {
-      this.handleExceptions(error)
-    }
+    await this.tripRepository.save(trip)
+    return trip
   }
 
   async remove(id: string) {
@@ -92,14 +80,5 @@ export class TripsService {
     }
 
     this.tripRepository.remove(trip)
-  }
-
-  private handleExceptions(error: any){
-    // TODO: Añadir los códigos de error que veamos que se van dando
-    // if (error.code === 0) throw new BadRequestException(error.detail)
-
-    this.logger.error(error)
-
-    throw new InternalServerErrorException('Unexpected error, check server logs')
   }
 }
