@@ -16,9 +16,9 @@ export class TripsService {
     private readonly tripRepository: Repository<Trip>
   ){}
 
-  async create(createTripDto: CreateTripDto) {
+  async create(dto: CreateTripDto) {
     try {
-      const trip = this.tripRepository.create(createTripDto)
+      const trip = this.tripRepository.create(dto)
       await this.tripRepository.save(trip)
       return trip
 
@@ -27,7 +27,7 @@ export class TripsService {
     }
   }
 
-  async findAll(filterTripDto: FilterTripDto) {
+  async findAll(dto: FilterTripDto) {
     const { 
       limit = 10, 
       offset = 0,
@@ -36,7 +36,7 @@ export class TripsService {
       destination,
       startDate,
       endDate
-    } = filterTripDto
+    } = dto
 
     const query = this.tripRepository.createQueryBuilder('trip')
 
@@ -65,10 +65,10 @@ export class TripsService {
     return trip
   }
 
-  async update(id: string, updateTripDto: UpdateTripDto) {
+  async update(id: string, dto: UpdateTripDto) {
     const trip = await this.tripRepository.preload({
       id,
-      ...updateTripDto
+      ...dto
     })
 
     if (!trip){
