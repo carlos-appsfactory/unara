@@ -1,6 +1,7 @@
 import { Place } from "src/places/entities/place.entity";
 import { Luggage } from "src/luggage/entities/luggage.entity";
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Activity } from "src/activities/entities/activity.entity";
 
 @Entity()
 export class Trip {
@@ -36,6 +37,12 @@ export class Trip {
     luggage: Luggage[];
 
     // TODO: Añadir relación con usuarios
+
+    @OneToMany(
+        () => Activity, 
+        activity => activity.trip
+    )
+    activities: Activity[]
 
     @CreateDateColumn()
     createdAt: Date
