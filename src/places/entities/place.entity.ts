@@ -1,5 +1,6 @@
+import { Activity } from 'src/activities/entities/activity.entity';
 import { Trip } from 'src/trips/entities/trip.entity';
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity()
 export class Place {
@@ -25,6 +26,12 @@ export class Place {
         { onDelete: 'CASCADE' }
     )
     trip: Trip;
+
+    @OneToMany(
+        () => Activity, 
+        activity => activity.place
+    )
+    activities: Activity[];
 
     // TODO: Añadir relación con usuarios
 
