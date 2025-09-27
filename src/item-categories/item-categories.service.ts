@@ -8,7 +8,6 @@ import { FilterItemCategoryDto } from './dto/filter-item.dto';
 
 @Injectable()
 export class ItemCategoriesService {
-  private readonly logger = new Logger('ItemService')
 
   constructor(
     @InjectRepository(ItemCategory)
@@ -16,14 +15,9 @@ export class ItemCategoriesService {
   ){}
 
   async create(createItemCategoryDto: CreateItemCategoryDto) {
-    try {
-      const itemCategory = this.itemCategoryRepository.create(createItemCategoryDto)
-      await this.itemCategoryRepository.save(itemCategory)
-      return itemCategory
-
-    } catch (error) {
-      this.handleExceptions(error)
-    }
+    const itemCategory = this.itemCategoryRepository.create(createItemCategoryDto)
+    await this.itemCategoryRepository.save(itemCategory)
+    return itemCategory
   }
 
   async findAll(filterItemCategoryDto: FilterItemCategoryDto) {
@@ -65,13 +59,8 @@ export class ItemCategoriesService {
       throw new NotFoundException(`Item category with id ${id} not found`)
     }
 
-    try {
-      await this.itemCategoryRepository.save(itemCategory)
-      return itemCategory
-    
-    } catch (error) {
-      this.handleExceptions(error)
-    }
+    await this.itemCategoryRepository.save(itemCategory)
+    return itemCategory
   }
 
   async remove(id: string) {
@@ -82,14 +71,5 @@ export class ItemCategoriesService {
     }
 
     this.itemCategoryRepository.remove(itemCategory)
-  }
-
-  private handleExceptions(error: any){
-    // TODO: Añadir los códigos de error que veamos que se van dando
-    // if (error.code === 0) throw new BadRequestException(error.detail)
-
-    this.logger.error(error)
-
-    throw new InternalServerErrorException('Unexpected error, check server logs')
   }
 }
