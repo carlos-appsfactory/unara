@@ -8,8 +8,6 @@ import { LuggageItem } from "../entities/luggage-item.entity"
 
 @Injectable()
 export class LuggageItemsService {
-
-  private readonly logger = new Logger('LuggageService')
   
   constructor(
     @InjectRepository(Luggage)
@@ -33,36 +31,31 @@ export class LuggageItemsService {
       throw new NotFoundException(`Item with id ${itemId} not found`)
     }
 
-    try{
-      const updateResult = await this.luggageItemRepository
-                                     .createQueryBuilder()
-                                     .update(LuggageItem)
-                                     .set({ quantity: dto.quantity })
-                                     .where('luggageId = :luggageId AND itemId = :itemId', { luggageId, itemId })
-                                     .execute()
-                                     
-      if (updateResult.affected === 0) {
-        await this.luggageItemRepository
-                  .createQueryBuilder()
-                  .insert()
-                  .into(LuggageItem)
-                  .values({
-                    luggage: { id: luggageId },
-                    item: { id: itemId },
-                    quantity: dto.quantity,
-                  })
-                  .execute();
-      }
-      
-      return await this.luggageItemRepository
-                       .createQueryBuilder('li')
-                       .leftJoinAndSelect('li.item', 'item')
-                       .where('li.luggageId = :luggageId AND li.itemId = :itemId', { luggageId, itemId })
-                       .getOne();
-
-    } catch (error) {
-      this.handleExceptions(error)
+    const updateResult = await this.luggageItemRepository
+                                    .createQueryBuilder()
+                                    .update(LuggageItem)
+                                    .set({ quantity: dto.quantity })
+                                    .where('luggageId = :luggageId AND itemId = :itemId', { luggageId, itemId })
+                                    .execute()
+                                    
+    if (updateResult.affected === 0) {
+      await this.luggageItemRepository
+                .createQueryBuilder()
+                .insert()
+                .into(LuggageItem)
+                .values({
+                  luggage: { id: luggageId },
+                  item: { id: itemId },
+                  quantity: dto.quantity,
+                })
+                .execute();
     }
+      
+    return await this.luggageItemRepository
+                      .createQueryBuilder('li')
+                      .leftJoinAndSelect('li.item', 'item')
+                      .where('li.luggageId = :luggageId AND li.itemId = :itemId', { luggageId, itemId })
+                      .getOne();
   }
 
   async findAll(luggageId: string) {
@@ -101,14 +94,5 @@ export class LuggageItemsService {
     if (result.affected === 0) {
       throw new NotFoundException(`Item with id ${itemId} not found in luggage ${luggageId}`)
     }
-  }
-
-  private handleExceptions(error: any){
-    // TODO: Añadir los códigos de error que veamos que se van dando
-    // if (error.code === 0) throw new BadRequestException(error.detail)
-
-    this.logger.error(error)
-
-    throw new InternalServerErrorException('Unexpected error, check server logs')
   }
 }
