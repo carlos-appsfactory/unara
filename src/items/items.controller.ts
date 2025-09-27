@@ -9,13 +9,13 @@ export class ItemsController {
   constructor(private readonly itemsService: ItemsService) {}
 
   @Post()
-  create(@Body() createItemDto: CreateItemDto) {
-    return this.itemsService.create(createItemDto);
+  create(@Body() dto: CreateItemDto) {
+    return this.itemsService.create(dto);
   }
 
   @Get()
-  findAll(@Query() filterItemDto: FilterItemDto) {
-    return this.itemsService.findAll(filterItemDto);
+  findAll(@Query() dto: FilterItemDto) {
+    return this.itemsService.findAll(dto);
   }
 
   @Get(':id')
@@ -26,8 +26,8 @@ export class ItemsController {
   @Patch(':id')
   update(
     @Param('id') id: string, 
-    @Body() updateItemDto: UpdateItemDto) {
-    return this.itemsService.update(id, updateItemDto);
+    @Body() dto: UpdateItemDto) {
+    return this.itemsService.update(id, dto);
   }
 
   @Delete(':id')
