@@ -11,13 +11,6 @@ export class Luggage {
 
     @Column('text')
     name: string
-
-    @ManyToOne(
-        () => LuggageCategory,
-        (category) => category.luggage,
-        { nullable: false }
-    )
-    category: LuggageCategory
     
     @OneToMany(
       () => LuggageItem, 
