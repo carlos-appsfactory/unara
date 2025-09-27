@@ -7,10 +7,6 @@ export class CreateLuggageDto {
     name: string
 
     @IsUUID()
-    @IsNotEmpty()
-    categoryId: string
-
-    @IsUUID()
     @IsOptional()
     tripId?: string
 }
