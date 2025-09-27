@@ -11,13 +11,13 @@ export class ItemCategoriesController {
   constructor(private readonly itemCategoriesService: ItemCategoriesService) {}
 
   @Post()
-  create(@Body() createItemCategoryDto: CreateItemCategoryDto) {
-    return this.itemCategoriesService.create(createItemCategoryDto);
+  create(@Body() dto: CreateItemCategoryDto) {
+    return this.itemCategoriesService.create(dto);
   }
 
   @Get()
-  findAll(@Query() filterItemCategoryDto: FilterItemCategoryDto) {
-    return this.itemCategoriesService.findAll(filterItemCategoryDto);
+  findAll(@Query() dto: FilterItemCategoryDto) {
+    return this.itemCategoriesService.findAll(dto);
   }
 
   @Get(':id')
@@ -28,8 +28,8 @@ export class ItemCategoriesController {
   @Patch(':id')
   update(
     @Param('id', ParseUUIDPipe) id: string, 
-    @Body() updateItemCategoryDto: UpdateItemCategoryDto) {
-    return this.itemCategoriesService.update(id, updateItemCategoryDto);
+    @Body() dto: UpdateItemCategoryDto) {
+    return this.itemCategoriesService.update(id, dto);
   }
 
   @Delete(':id')
