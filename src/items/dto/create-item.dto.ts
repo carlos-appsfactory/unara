@@ -12,7 +12,7 @@ export class CreateItemDto {
 
     @IsOptional()
     @IsString()
-    icon?: string
+    image?: string
 
     @IsUUID()
     @IsNotEmpty()
