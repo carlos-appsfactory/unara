@@ -10,8 +10,6 @@ import { Trip } from 'src/trips/entities/trip.entity';
 
 @Injectable()
 export class LuggageService {
-
-  private readonly logger = new Logger('LuggageService')
   
   constructor(
     @InjectRepository(Luggage)
@@ -25,13 +23,18 @@ export class LuggageService {
   ){}
 
   async create(createLuggageDto: CreateLuggageDto) {
+<<<<<<< HEAD
     try {
       const { categoryId, tripId, ...luggageData } = createLuggageDto
+=======
+    const { categoryId, ...luggageData } = createLuggageDto
+>>>>>>> 18a7002 (Remove db filter handler from luggage service)
 
-      const category = await this.luggageCategoryRepository.findOneBy({ id: categoryId })
+    const category = await this.luggageCategoryRepository.findOneBy({ id: categoryId })
 
-      if (!category) throw new NotFoundException(`Category with id ${categoryId} not found`)
+    if (!category) throw new NotFoundException(`Category with id ${categoryId} not found`)
 
+<<<<<<< HEAD
       let trip: Trip | null = null;
       if (tripId) {
         trip = await this.tripRepository.findOneBy({ id: tripId })
@@ -51,6 +54,15 @@ export class LuggageService {
     } catch (error) {
       this.handleExceptions(error)
     }
+=======
+    const luggage = this.luggageRepository.create({
+      ...luggageData,
+      category
+    })
+    
+    await this.luggageRepository.save(luggage)
+    return luggage
+>>>>>>> 18a7002 (Remove db filter handler from luggage service)
   }
 
   async findAll(filterLuggageDto: FilterLuggageDto) {
@@ -119,13 +131,8 @@ export class LuggageService {
       throw new NotFoundException(`Luggage with id ${id} not found`)
     }
 
-    try {
-      await this.luggageRepository.save(luggage)
-      return luggage
-    
-    } catch (error) {
-      this.handleExceptions(error)
-    }
+    await this.luggageRepository.save(luggage)
+    return luggage
   }
 
   async remove(id: string) {
@@ -136,14 +143,5 @@ export class LuggageService {
     }
 
     this.luggageRepository.remove(luggage)
-  }
-
-  private handleExceptions(error: any){
-    // TODO: Añadir los códigos de error que veamos que se van dando
-    // if (error.code === 0) throw new BadRequestException(error.detail)
-
-    this.logger.error(error)
-
-    throw new InternalServerErrorException('Unexpected error, check server logs')
   }
 }
