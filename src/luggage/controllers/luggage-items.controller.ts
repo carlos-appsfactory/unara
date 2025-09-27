@@ -1,7 +1,9 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, UseFilters } from "@nestjs/common";
 import { UpsertLuggageItemDto } from "../dto/upsert-luggage-item.dto";
 import { LuggageItemsService } from "../services/luggage-items.service";
+import { DatabaseExceptionFilter } from "src/common/filters/db-exception.filter";
 
+@UseFilters(new DatabaseExceptionFilter('LuggageItems'))
 @Controller('luggage/:luggageId/items')
 export class LuggageItemsController {
     constructor(private readonly luggageItemsService: LuggageItemsService) {}
