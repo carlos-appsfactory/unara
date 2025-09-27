@@ -19,8 +19,8 @@ export class ItemsService {
     private readonly itemCategoryRepository: Repository<ItemCategory>,
   ){}
 
-  async create(createItemDto: CreateItemDto) {
-    const { categoryId, ...itemData } = createItemDto
+  async create(dto: CreateItemDto) {
+    const { categoryId, ...itemData } = dto
 
     const category = await this.itemCategoryRepository.findOneBy({ id: categoryId })
 
@@ -40,13 +40,13 @@ export class ItemsService {
     }
   }
 
-  async findAll(filterItemDto: FilterItemDto) {
+  async findAll(dto: FilterItemDto) {
     const { 
       limit = 10, 
       offset = 0,
       name,
       categoryId,
-    } = filterItemDto
+    } = dto
 
     const query = this.itemRepository
                       .createQueryBuilder('item')
@@ -74,8 +74,8 @@ export class ItemsService {
     return item
   }
 
-  async update(id: string, updateItemDto: UpdateItemDto) {
-    const { categoryId, ...itemData } = updateItemDto;
+  async update(id: string, dto: UpdateItemDto) {
+    const { categoryId, ...itemData } = dto;
 
     let category: ItemCategory | null = null;
     if (categoryId) {
