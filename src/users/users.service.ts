@@ -16,9 +16,9 @@ export class UsersService {
     private readonly userRepository: Repository<User>
   ){}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(dto: CreateUserDto) {
     try {
-      const user = this.userRepository.create(createUserDto)
+      const user = this.userRepository.create(dto)
       await this.userRepository.save(user)
       return user
 
@@ -27,13 +27,13 @@ export class UsersService {
     }
   }
 
-  async findAll(filterUserDto: FilterUserDto) {
+  async findAll(dto: FilterUserDto) {
     const { 
       limit = 10, 
       offset = 0,
       email,
       username,
-    } = filterUserDto
+    } = dto
 
     const query = this.userRepository.createQueryBuilder('user')
 
@@ -56,10 +56,10 @@ export class UsersService {
     return user
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
+  async update(id: string, dto: UpdateUserDto) {
     const user = await this.userRepository.preload({
       id,
-      ...updateUserDto
+      ...dto
     })
 
     if (!user){
