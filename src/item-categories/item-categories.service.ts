@@ -14,19 +14,19 @@ export class ItemCategoriesService {
     private readonly itemCategoryRepository: Repository<ItemCategory>,
   ){}
 
-  async create(createItemCategoryDto: CreateItemCategoryDto) {
-    const itemCategory = this.itemCategoryRepository.create(createItemCategoryDto)
+  async create(dto: CreateItemCategoryDto) {
+    const itemCategory = this.itemCategoryRepository.create(dto)
     await this.itemCategoryRepository.save(itemCategory)
     return itemCategory
   }
 
-  async findAll(filterItemCategoryDto: FilterItemCategoryDto) {
+  async findAll(dto: FilterItemCategoryDto) {
     const { 
       limit = 10, 
       offset = 0,
       name,
       description
-    } = filterItemCategoryDto
+    } = dto
 
     const query = this.itemCategoryRepository.createQueryBuilder('itemCategory')
 
@@ -49,10 +49,10 @@ export class ItemCategoriesService {
     return itemCategory
   }
 
-  async update(id: string, updateItemCategoryDto: UpdateItemCategoryDto) {
+  async update(id: string, dto: UpdateItemCategoryDto) {
     const itemCategory = await this.itemCategoryRepository.preload({
       id,
-      ...updateItemCategoryDto
+      ...dto
     })
 
     if (!itemCategory){
