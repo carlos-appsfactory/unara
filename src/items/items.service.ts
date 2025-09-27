@@ -26,18 +26,13 @@ export class ItemsService {
 
     if (!category) throw new NotFoundException(`Category with id ${categoryId} not found`)
 
-    try {
-      const item = this.itemRepository.create({
-        ...itemData,
-        category
-      })
+    const item = this.itemRepository.create({
+      ...itemData,
+      category
+    })
 
-      await this.itemRepository.save(item)
-      return item
-
-    } catch (error) {
-      this.handleExceptions(error)
-    }
+    await this.itemRepository.save(item)
+    return item
   }
 
   async findAll(dto: FilterItemDto) {
@@ -94,13 +89,9 @@ export class ItemsService {
       throw new NotFoundException(`Item with id ${id} not found`)
     }
 
-    try {
-      await this.itemRepository.save(item)
-      return item
-    
-    } catch (error) {
-      this.handleExceptions(error)
-    }
+    await this.itemRepository.save(item)
+    return item
+
   }
 
   async remove(id: string) {
@@ -111,14 +102,5 @@ export class ItemsService {
     }
 
     this.itemRepository.remove(item)
-  }
-
-  private handleExceptions(error: any){
-    // TODO: Añadir los códigos de error que veamos que se van dando
-    // if (error.code === 0) throw new BadRequestException(error.detail)
-
-    this.logger.error(error)
-
-    throw new InternalServerErrorException('Unexpected error, check server logs')
   }
 }
