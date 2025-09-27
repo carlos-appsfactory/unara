@@ -9,7 +9,6 @@ import { FilterPlaceDto } from './dto/filter-place.dto';
 
 @Injectable()
 export class PlacesService {
-  private readonly logger = new Logger('PlacesService')
 
   constructor(
     @InjectRepository(Place)
@@ -20,24 +19,19 @@ export class PlacesService {
   ){}
 
   async create(tripId: string, dto: CreatePlaceDto) {
-    try{
-      const trip = await this.tripRepository.findOne({ where: { id: tripId } })
+    const trip = await this.tripRepository.findOne({ where: { id: tripId } })
 
-      if (!trip) {
-        throw new NotFoundException(`Trip with id ${tripId} not found`)
-      }
-
-      const place = this.placeRepository.create({
-        ...dto,
-        trip
-      })
-
-      await this.placeRepository.save(place)
-      return place
-    
-    } catch (error) {
-      this.handleExceptions(error)
+    if (!trip) {
+      throw new NotFoundException(`Trip with id ${tripId} not found`)
     }
+
+    const place = this.placeRepository.create({
+      ...dto,
+      trip
+    })
+
+    await this.placeRepository.save(place)
+    return place
   }
 
   async findAll(tripId: string, dto: FilterPlaceDto) {
@@ -87,12 +81,8 @@ export class PlacesService {
       throw new NotFoundException(`Place with id ${placeId} not found in trip ${tripId}`);
     }
     
-    try {
-      await this.placeRepository.save(place);
-      return place;
-    } catch (error) {
-      throw new InternalServerErrorException('Unexpected error, check server logs');
-    }
+    await this.placeRepository.save(place);
+    return place;
   }
   
   async remove(tripId: string, placeId: string) {
@@ -113,14 +103,5 @@ export class PlacesService {
     } catch (error) {
       throw new InternalServerErrorException('Unexpected error, check server logs');
     }
-  }
-
-  private handleExceptions(error: any){
-    // TODO: Añadir los códigos de error que veamos que se van dando
-    // if (error.code === 0) throw new BadRequestException(error.detail)
-
-    this.logger.error(error)
-
-    throw new InternalServerErrorException('Unexpected error, check server logs')
   }
 }
