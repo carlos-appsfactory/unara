@@ -8,9 +8,5 @@ export class FilterLuggageDto extends PaginationDto{
 
     @IsOptional()
     @IsUUID()
-    categoryId?: string
-
-    @IsOptional()
-    @IsUUID()
     tripId?: string
 }

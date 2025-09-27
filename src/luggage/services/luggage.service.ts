@@ -22,6 +22,7 @@ export class LuggageService {
     private readonly tripRepository: Repository<Trip>,
   ){}
 
+<<<<<<< HEAD
   async create(createLuggageDto: CreateLuggageDto) {
 <<<<<<< HEAD
     try {
@@ -29,6 +30,10 @@ export class LuggageService {
 =======
     const { categoryId, ...luggageData } = createLuggageDto
 >>>>>>> 18a7002 (Remove db filter handler from luggage service)
+=======
+  async create(dto: CreateLuggageDto) {
+    const { categoryId, ...luggageData } = dto
+>>>>>>> c827588 (Change DTO complex names to DTO on luggage service)
 
     const category = await this.luggageCategoryRepository.findOneBy({ id: categoryId })
 
@@ -65,14 +70,18 @@ export class LuggageService {
 >>>>>>> 18a7002 (Remove db filter handler from luggage service)
   }
 
-  async findAll(filterLuggageDto: FilterLuggageDto) {
+  async findAll(dto: FilterLuggageDto) {
     const { 
       limit = 10, 
       offset = 0,
       name,
       categoryId,
+<<<<<<< HEAD
       tripId,
     } = filterLuggageDto
+=======
+    } = dto
+>>>>>>> c827588 (Change DTO complex names to DTO on luggage service)
 
     const query = this.luggageRepository
                     .createQueryBuilder('luggage')
@@ -103,8 +112,13 @@ export class LuggageService {
     return luggage
   }
 
+<<<<<<< HEAD
   async update(id: string, updateLuggageDto: UpdateLuggageDto) {
     const { categoryId, tripId, ...luggageData } = updateLuggageDto;
+=======
+  async update(id: string, dto: UpdateLuggageDto) {
+    const { categoryId, ...luggageData } = dto;
+>>>>>>> c827588 (Change DTO complex names to DTO on luggage service)
 
     let category: LuggageCategory | null = null;
     if (categoryId) {
