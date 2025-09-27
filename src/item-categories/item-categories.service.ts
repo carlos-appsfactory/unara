@@ -28,7 +28,7 @@ export class ItemCategoriesService {
       description
     } = filterItemCategoryDto
 
-    const query = this.itemCategoryRepository.createQueryBuilder('item')
+    const query = this.itemCategoryRepository.createQueryBuilder('itemCategory')
 
     if (name) query.andWhere('itemCategory.name ILIKE :name', { name: `%${name}%`})
 
