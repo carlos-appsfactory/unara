@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseUUIDPipe, UseFilters } from '@nestjs/common';
 import { TripsService } from './trips.service';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { UpdateTripDto } from './dto/update-trip.dto';
 import { FilterTripDto } from './dto/filter-trip.dto';
+import { DatabaseExceptionFilter } from 'src/common/filters/db-exception.filter';
 
+@UseFilters(new DatabaseExceptionFilter('Trips'))
 @Controller('trips')
 export class TripsController {
   constructor(private readonly tripsService: TripsService) {}
