@@ -11,13 +11,13 @@ export class LuggageController {
   constructor(private readonly luggageService: LuggageService) {}
 
   @Post()
-  create(@Body() createLuggageDto: CreateLuggageDto) {
-    return this.luggageService.create(createLuggageDto);
+  create(@Body() dto: CreateLuggageDto) {
+    return this.luggageService.create(dto);
   }
 
   @Get()
-  findAll(@Query() filterLuggageDto: FilterLuggageDto) {
-    return this.luggageService.findAll(filterLuggageDto);
+  findAll(@Query() dto: FilterLuggageDto) {
+    return this.luggageService.findAll(dto);
   }
 
   @Get(':id')
@@ -28,8 +28,8 @@ export class LuggageController {
   @Patch(':id')
   update(
     @Param('id', ParseUUIDPipe) id: string, 
-    @Body() updateLuggageDto: UpdateLuggageDto) {
-    return this.luggageService.update(id, updateLuggageDto);
+    @Body() dto: UpdateLuggageDto) {
+    return this.luggageService.update(id, dto);
   }
 
   @Delete(':id')
