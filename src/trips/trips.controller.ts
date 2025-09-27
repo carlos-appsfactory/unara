@@ -9,13 +9,13 @@ export class TripsController {
   constructor(private readonly tripsService: TripsService) {}
 
   @Post()
-  create(@Body() createTripDto: CreateTripDto) {
-    return this.tripsService.create(createTripDto);
+  create(@Body() dto: CreateTripDto) {
+    return this.tripsService.create(dto);
   }
 
   @Get()
-  findAll(@Query() filterTripDto: FilterTripDto) {
-    return this.tripsService.findAll(filterTripDto);
+  findAll(@Query() dto: FilterTripDto) {
+    return this.tripsService.findAll(dto);
   }
 
   @Get(':id')
@@ -26,9 +26,9 @@ export class TripsController {
   @Patch(':id')
   update(
     @Param('id', ParseUUIDPipe) id: string, 
-    @Body() updateTripDto: UpdateTripDto
+    @Body() dto: UpdateTripDto
   ) {
-    return this.tripsService.update(id, updateTripDto);
+    return this.tripsService.update(id, dto);
   }
 
   @Delete(':id')
