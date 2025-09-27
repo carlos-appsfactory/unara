@@ -8,8 +8,6 @@ import { FilterUserDto } from './dto/filter-user.dto';
 
 @Injectable()
 export class UsersService {
-  
-  private readonly logger = new Logger('LuggageService')
 
   constructor(
     @InjectRepository(User)
@@ -17,14 +15,9 @@ export class UsersService {
   ){}
 
   async create(dto: CreateUserDto) {
-    try {
-      const user = this.userRepository.create(dto)
-      await this.userRepository.save(user)
-      return user
-
-    } catch (error) {
-      this.handleExceptions(error)
-    }
+    const user = this.userRepository.create(dto)
+    await this.userRepository.save(user)
+    return user
   }
 
   async findAll(dto: FilterUserDto) {
@@ -66,13 +59,8 @@ export class UsersService {
       throw new NotFoundException(`User with id ${id} not found`)
     }
 
-    try {
-      await this.userRepository.save(user)
-      return user
-    
-    } catch (error) {
-      this.handleExceptions(error)
-    }
+    await this.userRepository.save(user)
+    return user
   }
 
   async remove(id: string) {
@@ -83,14 +71,5 @@ export class UsersService {
     }
 
     this.userRepository.remove(user)
-  }
-
-  private handleExceptions(error: any){
-    // TODO: Añadir los códigos de error que veamos que se van dando
-    // if (error.code === 0) throw new BadRequestException(error.detail)
-
-    this.logger.error(error)
-
-    throw new InternalServerErrorException('Unexpected error, check server logs')
   }
 }
