@@ -1,4 +1,3 @@
-import { LuggageCategory } from "src/luggage-categories/entities/luggage-category.entity";
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { LuggageItem } from "./luggage-item.entity";
 import { Trip } from "src/trips/entities/trip.entity";
