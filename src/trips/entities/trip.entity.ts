@@ -1,5 +1,6 @@
 import { Place } from "src/places/entities/place.entity";
 import { Luggage } from "src/luggage/entities/luggage.entity";
+
 import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Activity } from "src/activities/entities/activity.entity";
 import { User } from "src/users/entities/user.entity";
@@ -43,6 +44,12 @@ export class Trip {
         (user) => user.trips
     )
     users: User[]
+
+    @OneToMany(
+        () => Activity, 
+        activity => activity.trip
+    )
+    activities: Activity[]
 
     @OneToMany(
         () => Activity, 

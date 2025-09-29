@@ -1,3 +1,4 @@
+
 import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -21,6 +22,7 @@ export class ActivitiesService {
     @InjectRepository(Place)
     private readonly placeRepository: Repository<Place>,
 
+
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
@@ -37,13 +39,16 @@ export class ActivitiesService {
       if (!place) throw new NotFoundException(`Place with id ${placeId} not found`);
     }
 
+
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException(`User with id ${userId} not found`);
+
 
     const activity = this.activityRepository.create({
       ...activityData,
       trip,
       ...(place ? { place } : {}),
+
       user: user,
     });
 
@@ -54,9 +59,11 @@ export class ActivitiesService {
   async findAll(dto: FilterActivityDto) {
     const { limit = 10, offset = 0, tripId, placeId, userId, name } = dto;
 
+
     const query = this.activityRepository
       .createQueryBuilder('activity')
       .leftJoinAndSelect('activity.trip', 'trip')
+
       .leftJoinAndSelect('activity.place', 'place')
       .leftJoinAndSelect('activity.user', 'user');
 
@@ -64,6 +71,7 @@ export class ActivitiesService {
     if (placeId) query.andWhere('activity.placeId = :placeId', { placeId });
     if (userId) query.andWhere('activity.userId = :userId', { userId });
     if (name) query.andWhere('activity.name ILIKE :name', { name: `%${name}%` });
+
 
     query.skip(offset).take(limit);
 
@@ -73,24 +81,29 @@ export class ActivitiesService {
   async findOne(id: string) {
     const activity = await this.activityRepository.findOne({
       where: { id },
+
       relations: ['trip', 'place', 'user'],
     });
 
     if (!activity) throw new NotFoundException(`Activity with id ${id} not found`);
+
     return activity;
   }
 
   async update(id: string, dto: UpdateActivityDto) {
+
     const { tripId, placeId, userId, ...activityData } = dto;
 
     let trip: Trip | null = null;
     if (tripId) {
       trip = await this.tripRepository.findOne({ where: { id: tripId } });
       if (!trip) throw new NotFoundException(`Trip with id ${tripId} not found`);
+
     }
 
     let place: Place | null = null;
     if (placeId) {
+
       place = await this.placeRepository.findOne({ where: { id: placeId } });
       if (!place) throw new NotFoundException(`Place with id ${placeId} not found`);
     }
@@ -99,6 +112,7 @@ export class ActivitiesService {
     if (userId) {
       user = await this.userRepository.findOne({ where: { id: userId } });
       if (!user) throw new NotFoundException(`User with id ${userId} not found`);
+
     }
 
     const activity = await this.activityRepository.preload({
@@ -106,6 +120,7 @@ export class ActivitiesService {
       ...activityData,
       ...(trip ? { trip } : {}),
       ...(place ? { place } : {}),
+
       ...(user ? { user: user } : {}),
     });
 
@@ -122,7 +137,9 @@ export class ActivitiesService {
 
   async remove(id: string) {
     const activity = await this.activityRepository.findOneBy({ id });
+
     if (!activity) throw new NotFoundException(`Activity with id ${id} not found`);
+
 
     await this.activityRepository.remove(activity);
     return { message: `Activity with id ${id} has been removed` };

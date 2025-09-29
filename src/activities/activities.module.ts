@@ -7,6 +7,8 @@ import { Trip } from 'src/trips/entities/trip.entity';
 import { Place } from 'src/places/entities/place.entity';
 import { User } from 'src/users/entities/user.entity';
 
+
+
 @Module({
   controllers: [ActivitiesController],
   providers: [ActivitiesService],

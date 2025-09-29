@@ -33,4 +33,5 @@ export class FilterActivityDto extends PaginationDto {
   @IsOptional()
   @IsUUID()
   userId?: string
+
 }

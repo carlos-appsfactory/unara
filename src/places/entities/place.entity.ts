@@ -1,5 +1,6 @@
 import { Activity } from 'src/activities/entities/activity.entity';
 import { Trip } from 'src/trips/entities/trip.entity';
+
 import { User } from 'src/users/entities/user.entity';
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
@@ -33,6 +34,7 @@ export class Place {
         activity => activity.place
     )
     activities: Activity[];
+
 
     @ManyToOne(
         () => User,
