@@ -13,7 +13,9 @@ export class CreateActivityDto {
 
     @IsDate()
     @Type(() => Date)
-    date: string
+
+    date: Date
+
 
     @IsUUID()
     @IsNotEmpty()
@@ -21,6 +23,11 @@ export class CreateActivityDto {
 
     @IsOptional()
     @IsUUID()
-    @IsNotEmpty()
+
     placeId?: string
+
+    @IsUUID()
+    @IsNotEmpty()
+    userId: string
+
 }

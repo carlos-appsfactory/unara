@@ -29,4 +29,9 @@ export class FilterActivityDto extends PaginationDto {
   @IsOptional()
   @IsUUID()
   placeId?: string
+
+  @IsOptional()
+  @IsUUID()
+  userId?: string
+
 }
