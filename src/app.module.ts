@@ -9,11 +9,13 @@ import { ItemCategoriesModule } from './item-categories/item-categories.module';
 import { TripsModule } from './trips/trips.module';
 import { PlacesModule } from './places/places.module';
 import { ActivitiesModule } from './activities/activities.module';
+import { AuthModule } from './auth/auth.module';
 import { SeedModule } from './seed/seed.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({isGlobal:true}),
 
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -42,7 +44,11 @@ import { SeedModule } from './seed/seed.module';
 
     ActivitiesModule,
 
-    SeedModule
+    AuthModule,
+
+    SeedModule,
+
+    MailModule
   ],
 })
 export class AppModule {}

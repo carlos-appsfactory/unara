@@ -72,4 +72,61 @@ export class UsersService {
 
     this.userRepository.remove(user)
   }
+
+  async findByEmail(email:string){
+    return await this.userRepository.findOne({
+      where:{email},
+      select:[
+        'id',
+        'email',
+        'username',
+        'password'
+      ]
+    })
+  }
+
+  async findOnePublic(term:string){
+    return await this.userRepository.createQueryBuilder('user')
+      .select([
+        'user.id', 
+        'user.username', 
+        'user.profile_picture'
+      ])
+      .where('user.username ILIKE :term OR user.email ILIKE :term', {term:`%${term}%`})
+      .getMany()
+  }
+
+  async findOneWithRefreshToken(id:string){
+    const user = await this.userRepository.findOne({
+      where: { id },
+      select: ['id', 'email', 'username', 'refresh_token']        
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+
+    return user;
+  }
+
+
+  async findOneWithResetToken(id:string){
+    const user = await this.userRepository.findOne({
+      where:{id},
+      select: ['id','email','username','password_reset_token','password_reset_expires']
+    })
+    
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+
+    return user;
+  }
+
+  async findOneWithVerificationToken(id: string) {
+    return await this.userRepository.findOne({
+      where: { id },
+      select: ['id', 'email', 'emailVerificationToken', 'emailVerificationExpires', 'isEmailVerified']
+    });
+  }
 }

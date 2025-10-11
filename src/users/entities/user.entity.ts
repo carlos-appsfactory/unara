@@ -3,6 +3,8 @@ import { Luggage } from "src/luggage/entities/luggage.entity";
 import { Place } from "src/places/entities/place.entity";
 import { Trip } from "src/trips/entities/trip.entity";
 import {
+  BeforeInsert,
+  BeforeUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -26,8 +28,32 @@ export class User {
   @Column({ type: "varchar", length: 255, unique: true })
   username: string;
 
-  @Column("text")
+  @Column({ type:'text',select:false, nullable:true})
   password: string;
+
+  @Column({ type:'text', array:true, default: ['user']})
+  roles: string[]
+
+  @Column({type:'text', nullable: true, select: false })
+  refresh_token?: string
+
+  @Column({type:'text', nullable:true,select:false})
+  password_reset_token?: string | null
+
+  @Column({type:'timestamp', nullable:true, select:false})
+  password_reset_expires?: Date | null
+
+  @Column({type:'bool', default:false})
+  isEmailVerified: boolean
+
+  @Column({type:'text', nullable:true,select:false})
+  emailVerificationToken?: string | null
+  
+  @Column({type:'timestamp', nullable:true, select:false})
+  emailVerificationExpires?: Date | null
+
+  @Column({type:'bool', default:true})
+  isActive: boolean
 
   @Column({ type: "text", nullable: true })
   profile_picture?: string;
@@ -44,9 +70,21 @@ export class User {
   @OneToMany(() => Place, (place) => place.user, { cascade: true })
   places: Place[];
 
+
+  @BeforeInsert()
+  checkFieldsBeforeInsert(){
+      this.email = this.email.toLowerCase().trim()
+  }
+
+  @BeforeUpdate()
+  checkFieldsBeforeUpdate(){
+      this.checkFieldsBeforeInsert()
+  }
+  
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
 }
